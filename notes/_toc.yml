@@ -3,7 +3,24 @@
 
 format: jb-book
 root: intro
-chapters:
-- file: markdown
-- file: notebooks
-- file: markdown-notebooks
+parts:
+- caption: A. Autoregressive model
+  numbered: True
+  chapters:
+  - file: Autoregressive/Autoregressive-models.ipynb
+  - file: Autoregressive/CharRNN.ipynb
+  - file: Autoregressive/MADE.ipynb
+  - file: Autoregressive/PixelCNN.ipynb
+- caption: B. Flow based model
+  numbered: True
+  chapters:
+  - file: Flow/Flow-based-models.ipynb
+  - file: Flow/RealNVP.ipynb
+  - file: Flow/Glow.ipynb
+- caption: C. Variational autoencoder
+  numbered: True
+  chapters: 
+  - file: VAE/Latent-variable-models.ipynb
+  - file: VAE/Variational-autoencoder.ipynb
+  - file: VAE/Conditional-VAE.ipynb
+  - file: VAE/VQVAE.ipynb
