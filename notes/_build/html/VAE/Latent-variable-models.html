@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -72,7 +72,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script>DOCUMENTATION_OPTIONS.pagename = 'VAE/Latent-variable-models';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="9. Convolutional VAE" href="Variational-autoencoder.html" />
+    <link rel="next" title="9. Convolutional VAE" href="Convolution-VAE.html" />
     <link rel="prev" title="7. GLOW" href="../Flow/Glow.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -198,9 +198,20 @@ const thebe_selector_output = ".output, .cell_output"
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">C. Variational autoencoder</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">8. Latent variable models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Variational-autoencoder.html">9. Convolutional VAE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Convolution-VAE.html">9. Convolutional VAE</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Conditional-VAE.html">10. Conditional VAE</a></li>
 <li class="toctree-l1"><a class="reference internal" href="VQVAE.html">11. VQ-VAE</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">D. Generative adversarial network</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../GAN/DCGAN.html">12. DCGAN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GAN/WGAN.html">13. Wasserstein GAN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GAN/ConditionalGAN.html">14. Conditional GAN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GAN/CycleGAN.html">15. CycleGAN</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">E. Diffusion model</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../Diffusion/Diffusion-model.html">16. Diffusion models</a></li>
 </ul>
 
     </div>
@@ -373,7 +384,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
 </div></div>
       
     </div>
@@ -389,6 +402,15 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variational-autoencoder">8.1. Variational autoencoder</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reparameterization-trick">8.2. Reparameterization trick</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -400,83 +422,121 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="latent-variable-models">
 <h1><span class="section-number">8. </span>Latent variable models<a class="headerlink" href="#latent-variable-models" title="Link to this heading">#</a></h1>
-<p>In latent variable models, we assume that the data distribution <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> is dependent on some unobserved variables called latent variables <span class="math notranslate nohighlight">\(\mathbf{z}\)</span>. The Bayes net structure is shown below. Assume that we have the prior distribution <span class="math notranslate nohighlight">\(p(\mathbf{z})\)</span> and the parameterized conditional distribution <span class="math notranslate nohighlight">\(p_{\theta}(\mathbf{x}|\mathbf{z})\)</span>, the loglikelihood objective now becomes</p>
+<p>In latent variable models, we assume that the data distribution <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> is dependent on some unobserved variables called latent variables <span class="math notranslate nohighlight">\(\mathbf{z}\)</span>.</p>
+<head>
+  <meta charset="UTF-8">
+  <title>Katex</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+</head>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/VAE/figures/Latent-variable-model.png" style="max-width: 30%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px;"> 
+    <strong> Figure 1 </strong>: Bayes net structure of latent variable model
+</p>
+<p>Assume that we have the prior distribution <span class="math notranslate nohighlight">\(p(\mathbf{z})\)</span> and the parameterized conditional distribution <span class="math notranslate nohighlight">\(p_{\theta}(\mathbf{x}|\mathbf{z})\)</span>, the log-likelihood objective now becomes</p>
 <div class="math notranslate nohighlight">
 \[\log p(x) = \log \int p_{\theta}(\mathbf{x}|\mathbf{z})p(\mathbf{z})d\mathbf{z} = \mathbb{E}_{\mathbf{z}}[p_{\theta}(\mathbf{x}|\mathbf{z})]\]</div>
-<p>How can we train this objective? One way is by sampling the prior <span class="math notranslate nohighlight">\(\{\mathbf{z}_i\}\sim p_{\mathbf{z}}(z)\)</span> and approximate the expectation by sample averages</p>
+<p>One way of training the objective is through Monte Carlo sampling. Let <span class="math notranslate nohighlight">\(\{\mathbf{z}_i\}\sim p_{\mathbf{z}}(z)\)</span>, we can estimate the expectation as</p>
 <div class="math notranslate nohighlight">
 \[\log p(x) \approx \frac{1}{K}\sum_{i=1}^K p_{\theta}(\mathbf{x}|\mathbf{z}_i)\]</div>
-<p>However, this method becomes inefficient as the dimensionality of the latent space becomes large. A more efficient way is to consider importance sampling. Note that the integral can be rewritten as</p>
+<p>However, this method has poor coverage properties. A more efficient way is to consider importance sampling. Let <span class="math notranslate nohighlight">\(q(\mathbf{z})\)</span> be any distribution, note that we can rewrite the integral as</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
-    \log p(\mathbf{x}) &amp;= \log \int p_{\theta}(\mathbf{x}|\mathbf{z})p(\mathbf{z})d\mathbf{z}\\
-    &amp;=\log \int \frac{p_{\theta}(\mathbf{x}|\mathbf{z})p(\mathbf{z})}{q(\mathbf{z})}q(\mathbf{z})d\mathbf{z}\\
-    &amp;= \log \mathbb{E}_{\mathbf{z}\sim q(\mathbf{z})} \bigg[\frac{p_{\theta}(\mathbf{x}|\mathbf{z})p(\mathbf{z})}{q(\mathbf{z})}\bigg]
+    \log p(\mathbf{x}) &amp;= \log \int p_{\theta}(\mathbf{x},\mathbf{z})p(\mathbf{z})d\mathbf{z}\\
+    &amp;=\log \int \frac{p_{\theta}(\mathbf{x},\mathbf{z})}{q(\mathbf{z})}q(\mathbf{z})d\mathbf{z}\\
+    &amp;= \log \mathbb{E}_{\mathbf{z}\sim q(\mathbf{z})} \bigg[\frac{p_{\theta}(\mathbf{x},\mathbf{z})}{q(\mathbf{z})}\bigg]
 \end{align*}
 \end{split}\]</div>
-<p>Where <span class="math notranslate nohighlight">\(q(\mathbf{z})\)</span> can be any distribution! By Jensen’s inequality, we can move the logarithm inside expectation, this gives us a lower bound on the objective.</p>
+<p>By Jensen’s inequality, we can move the logarithm inside expectation, this gives us a lower bound on the objective.</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
     \log p(\mathbf{x})
-    &amp;= \log \mathbb{E}_{\mathbf{z}\sim q(\mathbf{z})} \bigg[\frac{p_{\theta}(\mathbf{x}|\mathbf{z})p(\mathbf{z})}{q(\mathbf{z})}\bigg]\\
-    &amp;\geq \mathbb{E}_{\mathbf{z}\sim q(\mathbf{z})} \bigg[\log \frac{p_{\theta}(\mathbf{x}|\mathbf{z})p(\mathbf{z})}{q(\mathbf{z})}\bigg]\\
+    &amp;= \log \mathbb{E}_{\mathbf{z}\sim q(\mathbf{z})} \bigg[\frac{p_{\theta}(\mathbf{x},\mathbf{z})}{q(\mathbf{z})}\bigg]\\
+    &amp;\geq \mathbb{E}_{\mathbf{z}\sim q(\mathbf{z})} \bigg[\log \frac{p_{\theta}(\mathbf{x},\mathbf{z})}{q(\mathbf{z})}\bigg]\\
 \end{align*}
 \end{split}\]</div>
-<p>Ideally, we want the lower bound to be as tight as possible. We claim that the lower bound is equality when <span class="math notranslate nohighlight">\(q(\mathbf{z})\)</span> is chosen to be the posterior distribution <span class="math notranslate nohighlight">\(p(\mathbf{z}|\mathbf{x})\)</span>.</p>
+<p>How should we choose the distribution <span class="math notranslate nohighlight">\(q(\mathbf{z}\)</span>. Ideally, we want the lower bound to be as tight as possible. The following theorem shows that this is acheived when <span class="math notranslate nohighlight">\(q(\mathbf{z})\)</span> is the posterior distribution <span class="math notranslate nohighlight">\(p(\mathbf{z}|\mathbf{x})\)</span>.</p>
 <div class="proof theorem admonition" id="my-theorem">
 <p class="admonition-title"><span class="caption-number">Theorem 8.1 </span> (ELBO)</p>
 <section class="theorem-content" id="proof-content">
 <p>The lower bound of</p>
 <div class="math notranslate nohighlight">
-\[\log p(\mathbf{x})\geq \mathbb{E}_{\mathbf{z}\sim q(\mathbf{z})} \bigg[\log \frac{p_{\theta}(\mathbf{x}|\mathbf{z})p(\mathbf{z})}{q(\mathbf{z})}\bigg]\]</div>
+\[\log p(\mathbf{x})\geq \mathbb{E}_{\mathbf{z}\sim q(\mathbf{z})} \bigg[\log \frac{p_{\theta}(\mathbf{x},\mathbf{z})}{q(\mathbf{z})}\bigg]\]</div>
 <p>Is attained when <span class="math notranslate nohighlight">\(q(\mathbf{z}) = p(\mathbf{z}|\mathbf{x})\)</span></p>
 </section>
 </div><div class="proof admonition" id="proof">
 <p>Proof. Recall that Jensen’s inquality holds when the random variable is constant almost everywhere. This means that when</p>
 <div class="math notranslate nohighlight">
-\[q(\mathbf{z}) \propto p_{\theta}(\mathbf{x}|\mathbf{z})p(\mathbf{z}) \propto p(\mathbf{z}|\mathbf{x})\]</div>
+\[q(\mathbf{z}) \propto p_{\theta}(\mathbf{x},\mathbf{z}) \propto p(\mathbf{z}|\mathbf{x})\]</div>
 <p>Equality holds. Below we provide another proof using KL-divergence.</p>
 </div>
-<div class="proof admonition" id="proof">
-<p>Proof. Another way of proving the theorem is to rewrite the lower bound as</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}
-\begin{align*}
-    \log p(\mathbf{x})
-    &amp;= \log \mathbb{E}_{\mathbf{z}\sim q(\mathbf{z})} \bigg[\frac{p_{\theta}(\mathbf{x}|\mathbf{z})p(\mathbf{z})}{q(\mathbf{z})}\bigg]\\
-    &amp;\geq \log \mathbb{E}_{\mathbf{z}\sim q(\mathbf{z})} \bigg[\log \frac{p_{\theta}(\mathbf{z}|\mathbf{x})p(\mathbf{x})}{q(\mathbf{z})}\bigg]\\
-    &amp;= -\text{KL}(q(\mathbf{z}||p(\mathbf{z}|\mathbf{x})) + \log p(\mathbf{x})
-\end{align*}
-\end{split}\]</div>
-<p>Which becomes tight when <span class="math notranslate nohighlight">\(-\text{KL}(q(\mathbf{z}||p(\mathbf{z}|\mathbf{x}))=0\)</span> or <span class="math notranslate nohighlight">\(q(\mathbf{z}) = p(\mathbf{z}|\mathbf{x})\)</span>.</p>
-</div>
-<p>Theorem 1 suggests that if we choose <span class="math notranslate nohighlight">\(q(\mathbf{z}) = p(\mathbf{z}|\mathbf{x})\)</span>, then we have equality. However, the posterior in practice is hard to compute because it involves estimating an integral.</p>
+<p>Theorem 1 suggests that we should choose <span class="math notranslate nohighlight">\(q(\mathbf{z}) = p(\mathbf{z}|\mathbf{x})\)</span>. However, the posterior is usually hard to compute because it involves estimating an integral.</p>
 <div class="math notranslate nohighlight">
 \[p(\mathbf{z}|\mathbf{x}) = \frac{p(\mathbf{x}|\mathbf{z})p(\mathbf{z})}{\int p(\mathbf{x}|\mathbf{z})p(\mathbf{z})dz}\]</div>
-<p>Therefore, we instead approximate <span class="math notranslate nohighlight">\(p(\mathbf{z}|\mathbf{x})\)</span> from a family of parameterized distribution <span class="math notranslate nohighlight">\(q_{\phi}(\mathbf{z}|\mathbf{x}) \in \mathcal{Q}\)</span>. We want to choose <span class="math notranslate nohighlight">\(q\)</span> that maximizes the evidence lower bound (i.e. closest to the posterior). In other words, we want <span class="math notranslate nohighlight">\(\text{KL}(q(\mathbf{z}||p(\mathbf{z}|\mathbf{x}))\)</span>. To compute this KL, we rewrite it as</p>
+<p>Therefore, we instead approximate <span class="math notranslate nohighlight">\(p(\mathbf{z}|\mathbf{x})\)</span> using a family of parameterized distribution <span class="math notranslate nohighlight">\(q_{\phi}(\mathbf{z}|\mathbf{x}) \in \mathcal{Q}\)</span>. This approximation introduces a gap between the variational lower bound and the true objective, as the lower bound is only tight when <span class="math notranslate nohighlight">\(q_{\phi}(\mathbf{z}|\mathbf{x})\)</span> exactly matches <span class="math notranslate nohighlight">\(p(\mathbf{z}|\mathbf{x})\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align*}
+    \log p(\mathbf{x}) &amp;= \mathbb{E}_{\mathbf{z}\sim q_{\phi}(\mathbf{z}|\mathbf{x})}[\log p(\mathbf{x})] \\
+    &amp;= \mathbb{E}_{\mathbf{z}\sim q_{\phi}(\mathbf{z}|\mathbf{x})} \bigg[\log\frac{p_{\theta}(\mathbf{x},\mathbf{z})}{p(\mathbf{z}|\mathbf{x})}\bigg]\\
+    &amp;= \mathbb{E}_{\mathbf{z}\sim q_{\phi}(\mathbf{z}|\mathbf{x})} \bigg[\log\frac{p_{\theta}(\mathbf{x},\mathbf{z})}{p(\mathbf{z}|\mathbf{x})}\cdot \frac{q_{\phi}(\mathbf{z}|\mathbf{x})}{q_{\phi}(\mathbf{z}|\mathbf{x})}\bigg]\\
+    &amp;= \mathbb{E}_{\mathbf{z}\sim q_{\phi}(\mathbf{z}|\mathbf{x})} \bigg[\log\frac{p_{\theta}(\mathbf{x},\mathbf{z})}{q_{\phi}(\mathbf{z}|\mathbf{x})}\bigg]+ \mathbb{E}_{\mathbf{z}\sim p(\mathbf{z}|\mathbf{x})}\bigg[\log\frac{q_{\phi}(\mathbf{z}|\mathbf{x})}{p(\mathbf{z}|\mathbf{x})}\bigg]\\
+    &amp;= \mathbb{E}_{\mathbf{z}\sim q_{\phi}(\mathbf{z}|\mathbf{x})} \bigg[\log\frac{p_{\theta}(\mathbf{x},\mathbf{z})}{q_{\phi}(\mathbf{z}|\mathbf{x})}\bigg] - \text{KL}(q_{\phi}(\mathbf{z}|\mathbf{x})||p(\mathbf{z}|\mathbf{x}))\\
+    &amp;\geq \mathbb{E}_{\mathbf{z}\sim q_{\phi}(\mathbf{z}|\mathbf{x})} \bigg[\log\frac{p_{\theta}(\mathbf{x},\mathbf{z})}{q_{\phi}(\mathbf{z}|\mathbf{x})}\bigg]
+\end{align*}\end{split}\]</div>
+<p>The derivation above provides another proof for Theorem 1. It explicitly demonstrates that the term is a lower bound and becomes tighter as <span class="math notranslate nohighlight">\(q_{\phi}(\mathbf{z}|\mathbf{x})\)</span> approximates <span class="math notranslate nohighlight">\(p(\mathbf{z}|\mathbf{x})\)</span> more closely, measured by the KL-divergence. The lower bound is known as the Evidence Lower Bound (ELBO), and we use it as a proxy for the true log-likelihood. Instead of maximizing the log-likelihood directly, we optimize over
+<span class="math notranslate nohighlight">\(\theta\)</span> and <span class="math notranslate nohighlight">\(\phi\)</span> to make ELBO as large as possible.</p>
+<section id="variational-autoencoder">
+<h2><span class="section-number">8.1. </span>Variational autoencoder<a class="headerlink" href="#variational-autoencoder" title="Link to this heading">#</a></h2>
+<p>We can further decompose ELBO as follows</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
-    \text{KL}(q_{\phi}(\mathbf{z}|\mathbf{x})||p_{\theta}(\mathbf{z}|\mathbf{x})) &amp;= \int q_{\phi}(\mathbf{z}|\mathbf{x}) \log\frac{q_{\phi}(\mathbf{z}|\mathbf{x})}{p_{\theta}(\mathbf{z}|\mathbf{x})} d\mathbf{z}\\
-    &amp;= \int q_{\phi}(\mathbf{z}|\mathbf{x}) \log\frac{q_{\phi}(\mathbf{z}|\mathbf{x})p(\mathbf{x})}{p_{\theta}(\mathbf{x}, \mathbf{z})} d\mathbf{z}\\
-    &amp;= \int q_{\phi}(\mathbf{z}|\mathbf{x}) (\log p(\mathbf{x})+\log\frac{q_{\phi}(\mathbf{z}|\mathbf{x})}{p_{\theta}(\mathbf{x}, \mathbf{z})}) d\mathbf{z}\\
-    &amp;= \log p(\mathbf{x}) + \int q_{\phi}(\mathbf{z}|\mathbf{x}) \log\frac{q_{\phi}(\mathbf{z}|\mathbf{x})}{p_{\theta}(\mathbf{x}|\mathbf{z})p(\mathbf{z})} d\mathbf{z}\\
-    &amp;= \log p(\mathbf{x}) + \text{KL}(q_{\phi}(\mathbf{z}|\mathbf{x})||p(\mathbf{z})) - \mathbf{E}_{z\sim q_{\phi}(\mathbf{z}|\mathbf{x})}[\log p_{\theta}(\mathbf{x}|\mathbf{z})]
+    \text{ELBO} &amp;= \mathbb{E}_{\mathbf{z}\sim q_{\phi}(\mathbf{z}|\mathbf{x})} \bigg[\log\frac{p_{\theta}(\mathbf{x},\mathbf{z})}{q_{\phi}(\mathbf{z}|\mathbf{x})}\bigg]\\
+    &amp;=  \mathbb{E}_{\mathbf{z}\sim q_{\phi}(\mathbf{z}|\mathbf{x})} \bigg[\log\frac{p_{\theta}(\mathbf{x}|\mathbf{z})p(\mathbf{z})}{q_{\phi}(\mathbf{z}|\mathbf{x})}\bigg]\\
+    &amp;=  \underbrace{\mathbb{E}_{\mathbf{z}\sim q_{\phi}(\mathbf{z}|\mathbf{x})} [\log p_{\theta}(\mathbf{x}|\mathbf{z})]}_{\text{Reconstruction term}} -
+    \underbrace{\mathcal{D}_{KL}(q_{\phi}(\mathbf{z}|\mathbf{x})||p(\mathbf{z}))}_{\text{Prior matching term}}\\
 \end{align*}
 \end{split}\]</div>
-<p>Therefore, the lower bound can be written as</p>
+<p>The two terms in ELBO has intuitive interpretations.</p>
+<ol class="arabic simple">
+<li><p>Reconstruction term: If we treat <span class="math notranslate nohighlight">\(q_{\phi}(\mathbf{z}|\mathbf{x})\)</span> as an encoder and <span class="math notranslate nohighlight">\(p_{\theta}(\mathbf{x}|\mathbf{z})\)</span> as a decoder, then the first term measures the likelihood of reconstruction (i.e, mapping from <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> to <span class="math notranslate nohighlight">\(\mathbf{z}\)</span> and then back to <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>).</p></li>
+<li><p>Prior matching term: The second term ensures that the estimated posterior is similar to our prior belief over the latent variables.</p></li>
+</ol>
+</section>
+<section id="reparameterization-trick">
+<h2><span class="section-number">8.2. </span>Reparameterization trick<a class="headerlink" href="#reparameterization-trick" title="Link to this heading">#</a></h2>
+<p>Now it remains to thing about how to parameterize the distributions. The decoder <span class="math notranslate nohighlight">\(p_{\theta}(\mathbf{x}|\mathbf{z})\)</span> is usually parameterized by some neural network, where as the encoder <span class="math notranslate nohighlight">\(q_{\phi}(\mathbf{z}|\mathbf{x})\)</span> and the prior <span class="math notranslate nohighlight">\(p(\mathbf{z})\)</span> is commonly modeled as a multivariate Gaussian</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
-\log p(\mathbf{x}) &amp;\geq -\text{KL}(q(\mathbf{z}||p(\mathbf{z}|\mathbf{x})) + \log p(\mathbf{x})\\
-&amp;= -\text{KL}(q_{\phi}(\mathbf{z}|\mathbf{x})||p(\mathbf{z})) + \mathbf{E}_{z\sim q_{\phi}(\mathbf{z}|\mathbf{x})}[\log p_{\theta}(\mathbf{x}|\mathbf{z})]
+    q_{\phi}(\mathbf{z}|\mathbf{x}) &amp;= \mathcal{N}(\mathbf{z}; \mathbf{\mu}_{\phi}(\mathbf{x}), \sigma^2_{\phi}(\mathbf{x})\mathbf{I})\\
+    p(\mathbf{z}) &amp;= \mathcal{N}(\mathbf{z}; \mathbf{0}, \mathbf{I})
 \end{align*}
 \end{split}\]</div>
-<p>Which we now all can compute, therefore, our optimization problem is</p>
+<p>We can now estimate ELBO as follows</p>
 <div class="math notranslate nohighlight">
-\[\max_{\theta, \phi} -\text{KL}(q_{\phi}(\mathbf{z}|\mathbf{x})||p(\mathbf{z})) + \mathbf{E}_{z\sim q_{\phi}(\mathbf{z}|\mathbf{x})}[\log p_{\theta}(\mathbf{x}|\mathbf{z})]\]</div>
+\[\text{ELBO}\approx \frac{1}{n}\sum_{i=1}^n \log p_{\theta}(\mathbf{x}|\mathbf{z}_i)-
+    \mathcal{D}_{KL}(q_{\phi}(\mathbf{z}|\mathbf{x})||p(\mathbf{z}))\hspace{10mm}\mathbf{z}_i\sim q_{\phi}(\mathbf{z}|\mathbf{x})\]</div>
+<p>Where we used Monte Carlo estimate for the reconstruction term. One problem with the above objective is that we cannot compute the gradient with respect to <span class="math notranslate nohighlight">\(\phi\)</span> since we only have samples <span class="math notranslate nohighlight">\(\mathbf{z}_i\)</span> that is generated from <span class="math notranslate nohighlight">\(q_{\phi}(\mathbf{z}|\mathbf{x})\)</span>. One way of solving this issue is through the reparameterization trick, which uses the fact that</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{z}\sim \mathcal{N}(\mathbf{z}; \mathbf{\mu}_{\phi}(\mathbf{x}), \sigma^2_{\phi}(\mathbf{x})\mathbf{I})\hspace{3mm}\Longleftrightarrow \hspace{3mm} \mathbf{z} = \mathbf{\mu}_{\phi}(\mathbf{x}) + \sigma^2_{\phi} \odot \mathbf{\epsilon}\hspace{10mm} \epsilon\sim \mathcal{N}(\mathbf{z}; \mathbf{0}, \mathbf{I})\]</div>
+<p>Therefore, we can re-express our objective as</p>
+<div class="math notranslate nohighlight">
+\[\text{ELBO}\approx \frac{1}{n}\sum_{i=1}^n \log p_{\theta}(\mathbf{x}|\mathbf{\mu}_{\phi}(\mathbf{x}) + \sigma^2_{\phi} \odot \mathbf{\epsilon}_i)-
+    \mathcal{D}_{KL}(q_{\phi}(\mathbf{z}|\mathbf{x})||p(\mathbf{z}))\hspace{10mm}\epsilon_i\sim \mathcal{N}(\mathbf{z}; \mathbf{0}, \mathbf{I})\]</div>
+<p>Which is now differentiable over both <span class="math notranslate nohighlight">\(\theta\)</span> and <span class="math notranslate nohighlight">\(\phi\)</span>. The overall architecture of a variational autoencoder is shown in Figure 2.</p>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/VAE/figures/VAE-architecture.png" style="max-width: 40%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px;"> 
+    <strong> Figure 2 </strong>: A VAE consists of an encoder $q_{\phi}(\mathbf{z}|\mathbf{x})$ which maps inputs to the latent space. The decoder $p_{\theta}(\mathbf{x}|\mathbf{z})$ then attempts to reconstruct the input. 
+</p>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -519,7 +579,7 @@ document.write(`
       </div>
     </a>
     <a class="right-next"
-       href="Variational-autoencoder.html"
+       href="Convolution-VAE.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
@@ -534,7 +594,21 @@ document.write(`
             
             
               
-                <div class="bd-sidebar-secondary bd-toc"></div>
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variational-autoencoder">8.1. Variational autoencoder</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reparameterization-trick">8.2. Reparameterization trick</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

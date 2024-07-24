@@ -67,7 +67,9 @@ const thebe_selector = ".thebe,.cell"
 const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'VAE/Variational-autoencoder';</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'VAE/Convolution-VAE';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="10. Conditional VAE" href="Conditional-VAE.html" />
@@ -200,6 +202,17 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1"><a class="reference internal" href="Conditional-VAE.html">10. Conditional VAE</a></li>
 <li class="toctree-l1"><a class="reference internal" href="VQVAE.html">11. VQ-VAE</a></li>
 </ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">D. Generative adversarial network</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../GAN/DCGAN.html">12. DCGAN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GAN/WGAN.html">13. Wasserstein GAN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GAN/ConditionalGAN.html">14. Conditional GAN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GAN/CycleGAN.html">15. CycleGAN</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">E. Diffusion model</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../Diffusion/Diffusion-model.html">16. Diffusion models</a></li>
+</ul>
 
     </div>
 </nav></div>
@@ -270,7 +283,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://github.com/executablebooks/jupyter-book/issues/new?title=Issue%20on%20page%20%2FVAE/Variational-autoencoder.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/executablebooks/jupyter-book/issues/new?title=Issue%20on%20page%20%2FVAE/Convolution-VAE.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -300,7 +313,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="../_sources/VAE/Variational-autoencoder.ipynb" target="_blank"
+      <li><a href="../_sources/VAE/Convolution-VAE.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -394,8 +407,9 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vae-on-mnist">9.1. VAE On MNIST</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vae-on-cifar10">9.2. VAE on CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolution-vae-on-mnist">9.1. Convolution VAE on MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolution-vae-on-cifar10">9.2. Convolution VAE on CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bibliography">9.3. Bibliography</a></li>
 </ul>
             </nav>
         </div>
@@ -409,7 +423,16 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="convolutional-vae">
 <h1><span class="section-number">9. </span>Convolutional VAE<a class="headerlink" href="#convolutional-vae" title="Link to this heading">#</a></h1>
-<p>In this notebook we implement a convolutional VAE to model the distributions of MNIST and CIFAR10. We train the model for around 10 epochs for each.</p>
+<p>A convolutional variational autoencoder uses convolutional and deconvolutional layers to parameterize its encoders and decoders. In this section, we implement a convolutional VAE to model the MNIST and CIFAR10 dataset. We model</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align*}
+    p_{\theta}(\mathbf{x}|\mathbf{z}) &amp;= \mathcal{N}(\mathbf{x}|\mathbf{\mu}_{\theta}(\mathbf{z}), \mathbf{I})\\
+    q_{\phi}(\mathbf{z}|\mathbf{x}) &amp;= \mathcal{N}(\mathbf{z}|\mathbf{\mu}_{\phi}(\mathbf{x}), \mathbf{\sigma}_{\phi}(\mathbf{x})^2 \mathbf{I})\\
+    p(\mathbf{z}) &amp;= \mathcal{N}(\mathbf{z}|\mathbf{0}, \mathbf{I})\\
+\end{align*}
+\end{split}\]</div>
+<p>Note that for the decoder, we fix the covariance matrix as the identity. We follow the architecture described in Figure 1. As a preprocessing step, we scaled the pixels in both dataset to the range of <span class="math notranslate nohighlight">\([-1, 1]\)</span>.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -452,11 +475,20 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Encoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_dim</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implementation for the encoder q(z|x)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @param in_channels: int</span>
+<span class="sd">            Number of channels of the input image</span>
+<span class="sd">        @param latent_dim: int</span>
+<span class="sd">            Latent variable dimension</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Encoder</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">latent_dim</span> <span class="o">=</span> <span class="n">latent_dim</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_dim</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
@@ -478,7 +510,15 @@ document.write(`
         <span class="k">return</span> <span class="n">mu</span><span class="p">,</span> <span class="n">log_std</span>
 
 <span class="k">class</span> <span class="nc">Decoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out_dim</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implementation for the decoder p(x|z)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @param out_channels: int</span>
+<span class="sd">            Number of channels of the reconstructed image</span>
+<span class="sd">        @param latent_dim: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Decoder</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">latent_dim</span> <span class="o">=</span> <span class="n">latent_dim</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
@@ -494,7 +534,7 @@ document.write(`
             <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="n">out_dim</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">Tanh</span><span class="p">()</span>
         <span class="p">)</span>
 
@@ -507,24 +547,37 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">VAE</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_dim</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ConvolutionVAE</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implementation of convolutional VAE class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @param channels: int</span>
+<span class="sd">        @param latent_dim: int</span>
+<span class="sd">        @param device: string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">VAE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">Encoder</span><span class="p">(</span><span class="n">in_dim</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">Decoder</span><span class="p">(</span><span class="n">in_dim</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">Encoder</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">Decoder</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">latent_dim</span> <span class="o">=</span> <span class="n">latent_dim</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @param x: torch.tensor [B, C, H, W]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="n">mu_x</span><span class="p">,</span> <span class="n">log_std_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">eps</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">mu_x</span><span class="p">)</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">mu_x</span> <span class="o">+</span> <span class="n">log_std_x</span><span class="o">.</span><span class="n">exp</span><span class="p">()</span> <span class="o">*</span> <span class="n">eps</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">mu_x</span> <span class="o">+</span> <span class="n">log_std_x</span><span class="o">.</span><span class="n">exp</span><span class="p">()</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">mu_x</span><span class="p">)</span>
         <span class="n">x_recon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
         <span class="n">x_recon</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">x_recon</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x_recon</span><span class="p">,</span> <span class="n">mu_x</span><span class="p">,</span> <span class="n">log_std_x</span>
 
     <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        @param n_samples: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
         <span class="n">z</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">latent_dim</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
@@ -536,9 +589,22 @@ document.write(`
 </div>
 </div>
 </div>
+<p>For the loss function, we use mean square error loss directly in place of the original reconstruction loss. This is because <span class="math notranslate nohighlight">\(p_{\theta}(\mathbf{x}|\mathbf{z}) = \mathcal{N}(\mathbf{x}|\mathbf{\mu}_{\theta}(\mathbf{z}), \mathbf{I})\)</span>, and therefore</p>
+<div class="math notranslate nohighlight">
+\[\log p_{\theta}(\mathbf{x}|\mathbf{z})\propto -||x-\mathbf{\mu}_{\theta}(\mathbf{z})||_2^2\]</div>
+<p>The prior matching loss remains the same, and we use the formula for KL-divergence between two multivariate Gaussian directly:</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{D}_{KL}(\mathcal{N}(\mu_1, \Sigma_1)||\mathcal{N}(\mu_2, \Sigma_2)) = \frac{1}{2}\bigg[\log \frac{|\Sigma_2|}{|\Sigma_1|}-d+(\mu_1-\mu_2)^T\Sigma_2^{-1}(\mu_1-\mu_2)+\text{Tr}(\Sigma_2^{-1}\Sigma_1)\bigg]\]</div>
+<p>See [1] for a complete derivation.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">loss_fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x_recon</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">log_std</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loss function for the vae</span>
+<span class="sd">    @param x, x_recon: torch.tensor [B, C, H, W]</span>
+<span class="sd">    @param mu: torch.tensor [B, L]</span>
+<span class="sd">    @param log_std: torch.tensor [B, L]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">recon_loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x_recon</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
     <span class="n">kl_loss</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">log_std</span> <span class="o">-</span> <span class="n">mu</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">log_std</span><span class="p">)</span><span class="o">.</span><span class="n">exp</span><span class="p">(),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
     <span class="n">loss</span> <span class="o">=</span> <span class="n">recon_loss</span> <span class="o">+</span> <span class="n">kl_loss</span>
@@ -547,40 +613,55 @@ document.write(`
 </div>
 </div>
 </div>
-<section id="vae-on-mnist">
-<h2><span class="section-number">9.1. </span>VAE On MNIST<a class="headerlink" href="#vae-on-mnist" title="Link to this heading">#</a></h2>
+<section id="convolution-vae-on-mnist">
+<h2><span class="section-number">9.1. </span>Convolution VAE on MNIST<a class="headerlink" href="#convolution-vae-on-mnist" title="Link to this heading">#</a></h2>
+<p>We first train a VAE on the MNIST dataset. Note that the model is capable of generating instances that closely resemble handwritten digits.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vae</span> <span class="o">=</span> <span class="n">VAE</span><span class="p">(</span><span class="n">in_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">latent_dim</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vae</span> <span class="o">=</span> <span class="n">VAE</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">vae</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
-<span class="n">train</span><span class="p">(</span><span class="n">vae</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">mnist_train_loader</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">train</span><span class="p">(</span><span class="n">vae</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_samples</span><span class="p">(</span><span class="n">vae</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
 <img alt="../_images/6e3a9605f2d28b1246ca3def2ab3ea45391cf19b225598317db18b77cf0c325b.png" src="../_images/6e3a9605f2d28b1246ca3def2ab3ea45391cf19b225598317db18b77cf0c325b.png" />
 </div>
 </div>
-<div class="cell docutils container">
+<p>The model also performs well in reconstruction. In the figure below, each pair consists of the true image in the left column and the reconstructed image in the right column. This indicates that our model has learned a latent representation for MNIST.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_reconstruction</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
 <img alt="../_images/4ad699786310b78c2238e191f84f230b4aea5b0ae8bbdf5a627e1abddfdc6a94.png" src="../_images/4ad699786310b78c2238e191f84f230b4aea5b0ae8bbdf5a627e1abddfdc6a94.png" />
 </div>
 </div>
 </section>
-<section id="vae-on-cifar10">
-<h2><span class="section-number">9.2. </span>VAE on CIFAR10<a class="headerlink" href="#vae-on-cifar10" title="Link to this heading">#</a></h2>
+<section id="convolution-vae-on-cifar10">
+<h2><span class="section-number">9.2. </span>Convolution VAE on CIFAR10<a class="headerlink" href="#convolution-vae-on-cifar10" title="Link to this heading">#</a></h2>
+<p>We now train a VAE on the CIFAR-10 dataset. Note that the generated samples appear blurry, a phenomenon observed in [2] and [3]. One reason for this is the use of the <span class="math notranslate nohighlight">\(L_2\)</span> norm in the reconstruction loss. The <span class="math notranslate nohighlight">\(L_2\)</span> norm is minimized when the possible outputs are averaged, leading to blurry results.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vae</span> <span class="o">=</span> <span class="n">VAE</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -590,16 +671,23 @@ document.write(`
 </div>
 </div>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_samples</span><span class="p">(</span><span class="n">vae</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
 <img alt="../_images/4a74b0f777f475f7ebf43f2fc40f0caa211f9592c527a560ac0d0ecdd27c4540.png" src="../_images/4a74b0f777f475f7ebf43f2fc40f0caa211f9592c527a560ac0d0ecdd27c4540.png" />
 </div>
 </div>
+<p>Despite being blurry, the reconstructions still appears to capture the general contours/color of the ground truth images.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_reconstruction</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -610,6 +698,12 @@ document.write(`
 <img alt="../_images/178df2fd91c074dc7ba9913320a90a06c9f6bc68f749be8e297c483e7c6af132.png" src="../_images/178df2fd91c074dc7ba9913320a90a06c9f6bc68f749be8e297c483e7c6af132.png" />
 </div>
 </div>
+</section>
+<section id="bibliography">
+<h2><span class="section-number">9.3. </span>Bibliography<a class="headerlink" href="#bibliography" title="Link to this heading">#</a></h2>
+<p>[1] <a class="reference external" href="https://mr-easy.github.io/2020-04-16-kl-divergence-between-2-gaussian-distributions/">https://mr-easy.github.io/2020-04-16-kl-divergence-between-2-gaussian-distributions/</a> <br>
+[2] <a class="reference external" href="https://arxiv.org/pdf/1604.07379">https://arxiv.org/pdf/1604.07379</a> <br>
+[3] <a class="reference external" href="https://arxiv.org/pdf/1611.07004">https://arxiv.org/pdf/1611.07004</a></p>
 </section>
 </section>
 
@@ -677,8 +771,9 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vae-on-mnist">9.1. VAE On MNIST</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vae-on-cifar10">9.2. VAE on CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolution-vae-on-mnist">9.1. Convolution VAE on MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolution-vae-on-cifar10">9.2. Convolution VAE on CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bibliography">9.3. Bibliography</a></li>
 </ul>
   </nav></div>
 
