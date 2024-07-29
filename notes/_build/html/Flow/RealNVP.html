@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -407,12 +407,22 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-architecture">6.1. RealNVP architecture</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resnet-implementation">6.2. Resnet implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#coupling-layer-implementation">6.3. Coupling layer implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-implementation">6.4. RealNVP Implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-loop-implementation">6.5. Training loop implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-cifar10">6.6. On CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-architecture">6.1. RealNVP architecture</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#masking-scheme">6.1.1. Masking scheme</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-block">6.1.2. RealNVP Block</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#multiscale-architecture">6.1.3. Multiscale architecture</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loss-function">6.1.4. Loss function</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">6.2. Implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#coupling-layer-implementation">6.2.1. Coupling layer implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-implementation">6.2.2. RealNVP Implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">6.2.3. RealNVP implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">6.2.4. Loss function</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-mnist">6.3. On MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-cifar10">6.4. On CIFAR10</a></li>
 </ul>
             </nav>
         </div>
@@ -426,7 +436,7 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="real-nvp">
 <h1><span class="section-number">6. </span>Real NVP<a class="headerlink" href="#real-nvp" title="Link to this heading">#</a></h1>
-<p>One challenge of flow based model is to find <span class="math notranslate nohighlight">\(f\)</span> such that it is invertible and that we can parameterize arbitrarily. In 2014, Dinh et al. proposed a clever way of constructing the flow. Given <span class="math notranslate nohighlight">\(\mathbf{x}\in \mathbb{R}^D\)</span>, consider the map</p>
+<p>One challenge of flow-based models is to find a transformation <span class="math notranslate nohighlight">\(f\)</span> that is invertible, has a simple Jacobian determinant, and possesses sufficient expressive power. In 2014, Dinh et al. proposed a clever way of constructing such transformations using coupling layers. Their approach, known as NICE (Non-linear Independent Components Estimation), involves splitting the input data into two parts and applying an affine transformation to one part conditioned on the other. Formally, let <span class="math notranslate nohighlight">\(\mathbf{x}\in \mathbb{R}^D\)</span> denote the input sequence, the function <span class="math notranslate nohighlight">\(\mathbf{z}=f(\mathbf{x})\)</span> acts as follows</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{equation*}
 \begin{cases}
@@ -434,7 +444,7 @@ document.write(`
 \mathbf{z}_{D/2:D} = \mathbf{x}_{D/2:D} + m_{\theta}(\mathbf{x}_{1:D/2})\\
 \end{cases}
 \end{equation*}\end{split}\]</div>
-<p>Note that such mapping is invertible, whose inverse is given by</p>
+<p>Note that <span class="math notranslate nohighlight">\(f\)</span> is invertible, with inverse being</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{equation*}
 \begin{cases}
@@ -442,19 +452,14 @@ document.write(`
 \mathbf{x}_{D/2:D} = \mathbf{z}_{D/2:D} - m_{\theta}(\mathbf{z}_{1:D/2})\\
 \end{cases}
 \end{equation*}\end{split}\]</div>
-<p>Note that when taking the inverse, there is no need to take the inverse of <span class="math notranslate nohighlight">\(m_\theta\)</span>, this means that we can parameterize <span class="math notranslate nohighlight">\(m_{\theta}\)</span> however we want! For example, using a neural network. Moreover, the Jacobian of the map is also easy to compute</p>
+<p>Moreover, evaluating the inverse does not involve taking the inverse of <span class="math notranslate nohighlight">\(m_\theta\)</span>. This means that we can parameterize <span class="math notranslate nohighlight">\(m_{\theta}\)</span> however we want! (for example, with a neural network). The Jacobian of the map is also easy to compute</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\frac{\partial \mathbf{z}}{\partial \mathbf{x}} = \begin{bmatrix}
 1 &amp; 0\\
 \frac{\partial m_{\theta}}{\partial \mathbf{z}} &amp; 1
 \end{bmatrix} \implies \bigg|\frac{\partial \mathbf{z}}{\partial \mathbf{x}}\bigg|=1\end{split}\]</div>
-<p>Meaning that such flow is volume preserving. Such triangular structure in the computational graph of <span class="math notranslate nohighlight">\(f\)</span> ensures that the flow is</p>
-<ol class="arabic simple">
-<li><p>Invertible</p></li>
-<li><p>Can be parameterized however we want</p></li>
-<li><p>Easy to compute determinant</p></li>
-</ol>
-<p>Two years later, Dinh et al. proposed realNVP, which serves as a generalization of the NICE architecture. The flow function in RealNVP is given by</p>
+<p>One downside of such a mapping is that it only modifies half of <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>. To modify all of <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>, we can consider stacking multiple layers of the mapping <span class="math notranslate nohighlight">\(f\)</span> with alternating partitions of <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> (Figure 1). This allows the entire input to be modified and enhances the overall expressiveness of the model. <br></p>
+<p>Two years later, Dinh et al. proposed RealNVP, which serves as a generalization of the NICE architecture. The flow function in RealNVP takes a similar form to that in NICE.</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{equation*}
 \begin{cases}
@@ -462,7 +467,7 @@ document.write(`
 \mathbf{z}_{D/2:D} = \mathbf{x}_{D/2:D} \odot \exp(s(\mathbf{x}_{1:D/2}))+ t(\mathbf{x}_{1:D/2})\\
 \end{cases}
 \end{equation*}\end{split}\]</div>
-<p>The inverse now becomes</p>
+<p>Whose inverse is given by</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{equation*}
 \begin{cases}
@@ -470,24 +475,73 @@ document.write(`
 \mathbf{x}_{D/2:D} = (\mathbf{z}_{D/2:D} - t(\mathbf{z}_{1:D/2}))\odot \exp(-s(\mathbf{z}_{1:D/2}))\\
 \end{cases}
 \end{equation*}\end{split}\]</div>
-<p>Like before, computing the inverse does not require taking the inverse of <span class="math notranslate nohighlight">\(s\)</span> or <span class="math notranslate nohighlight">\(t\)</span>, this means that we can parameterize <span class="math notranslate nohighlight">\(s\)</span> and <span class="math notranslate nohighlight">\(t\)</span> as deep as we want. The Jacobian of the flow is given by</p>
+<p>As before, computing the inverse does not require taking the inverse of <span class="math notranslate nohighlight">\(s\)</span> or <span class="math notranslate nohighlight">\(t\)</span>, meaning we can parameterize <span class="math notranslate nohighlight">\(s\)</span> and <span class="math notranslate nohighlight">\(t\)</span> as deeply as we want. The Jacobian of the flow is given by</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\frac{\partial \mathbf{z}}{\partial \mathbf{x}} = \begin{bmatrix}
 1 &amp; 0\\
 \frac{\partial \mathbf{z}_{D/2:D}}{\partial \mathbf{x}_{1:D/2}} &amp; \exp(s(\mathbf{x}_{1:D/2}))
 \end{bmatrix} \implies \bigg|\frac{\partial \mathbf{z}}{\partial \mathbf{x}}\bigg|=\exp(s(\mathbf{x}_{1:D/2}))\end{split}\]</div>
-<p>Which can be computed during the forward pass! Such invertible transformation is therefore a good candidate in flow based model. Note that, however, in each of these layers, only half of the data is processed, the other half remain unchanged. To solve this, Dihn propose stacking these layers with alternating patterns. This ensures that each section in the model is processed during the forward pass.</p>
+<p>This Jacobian can be computed during the forward pass! However, the flow proposed in RealNVP suffers from the same problem as the one in NICE—both only modify half of the input sequence. To overcome this, Dinh et al. proposed stacking these layers with different patterns. Below, we discuss the architecture of RealNVP.</p>
 <section id="realnvp-architecture">
 <h2><span class="section-number">6.1. </span>RealNVP architecture<a class="headerlink" href="#realnvp-architecture" title="Link to this heading">#</a></h2>
-<p>The previous section gives a high level overview of the RealNVP architecture. In the paper, the architecture is slightly more involved. Note that the traingular computational graph can be implemented using a mask. The expression can be written as</p>
+<section id="masking-scheme">
+<h3><span class="section-number">6.1.1. </span>Masking scheme<a class="headerlink" href="#masking-scheme" title="Link to this heading">#</a></h3>
+<p>The triangular computational graph of RealNVP can be implemented using a binary mask. The mapping <span class="math notranslate nohighlight">\(f\)</span> can be concisely expressed as</p>
 <div class="math notranslate nohighlight">
 \[\mathbf{z} = b\odot \mathbf{x} + (1-b) \odot \bigg(\mathbf{x} \odot \exp(s(b \odot \mathbf{x})) + t(b \odot \mathbf{x})\bigg)\]</div>
-<p>And the inverse is given by</p>
+<p>With inverse being</p>
 <div class="math notranslate nohighlight">
 \[\mathbf{x} = b\odot \mathbf{z} + (1-b) \odot \bigg((\mathbf{z} - t(b \odot \mathbf{z})) \odot \exp(-s(b \odot \mathbf{z}))\bigg)\]</div>
-<p>Using this notation, note that instead of chunking a sequence, we can apply whatever mask we want. In the paper, Dihn uses a checkboard mask and a channel mask. In this case, there is no need to flatten the images into a sequence for chunking. <br></p>
-<p>In the paper, they define a block as applying three checkerboard masks, a squeeze operation, and three channel masks. The last layer is composed of four checkerboard masks. <br></p>
-<p>Moreover, after each squeeze operation, only half of the outputs are kept, the remaining is directly send to the final output.</p>
+<p>One advantage of using this notation is that we can apply any binary mask we like, rather than simply flattening and splitting the sequence in half.  In the paper, Dinh et al. applied two types of masks: checkerboard masks and channel masks (Figure 2). <br></p>
+<p>Each layer uses one of the masks and produces output based on equation <span class="math notranslate nohighlight">\((1)\)</span>. The functions <span class="math notranslate nohighlight">\(s\)</span> and <span class="math notranslate nohighlight">\(t\)</span> are parameterized following a ResNet architecture, with standard convolution replaced by weighted convolution. For the scale function <span class="math notranslate nohighlight">\(s\)</span>, a <span class="math notranslate nohighlight">\(\tanh\)</span> activation is applied at the end to constrain the value to <span class="math notranslate nohighlight">\([-1, 1]\)</span>. The constrained value is then multiplied by a learnable scale parameter.</p>
+</section>
+<section id="realnvp-block">
+<h3><span class="section-number">6.1.2. </span>RealNVP Block<a class="headerlink" href="#realnvp-block" title="Link to this heading">#</a></h3>
+<p>A RealNVP block is composed of three alternating checkerboard masks, followed by a squeeze operation, and then three alternating channel masks. The squeeze operation reduces a tensor of shape <span class="math notranslate nohighlight">\([C, H, W]\)</span> to <span class="math notranslate nohighlight">\([4C, \frac{H}{2}, \frac{W}{2}]\)</span>. This trades spatial dimensions for the number of channels. In the final layer, the block is replaced by four alternating checkerboard masks.</p>
+</section>
+<section id="multiscale-architecture">
+<h3><span class="section-number">6.1.3. </span>Multiscale architecture<a class="headerlink" href="#multiscale-architecture" title="Link to this heading">#</a></h3>
+<p>To save computational and memory costs, Dinh et al. factored out half of the variables after each RealNVP block. The factored variable is flattened and concatenated with other factored variables. This operation is defined recursively as:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align*}
+    \mathbf{h}^{(0)} &amp;= \mathbf{x}\\
+    (\mathbf{z}^{(i+1)}, \mathbf{h}^{(i+1)}) &amp;= f^{(i+1)}(\mathbf{h}^{(i)})\\
+    \mathbf{z}^{(L)} &amp;= f^{(L)}(\mathbf{h}^{(L-1)})\\
+    \mathbf{z} &amp;= (\mathbf{z}^{(1)}, \mathbf{z}^{(2)},..., \mathbf{z}^{(L)})
+\end{align*}
+\end{split}\]</div>
+<p>The final vector <span class="math notranslate nohighlight">\(\mathbf{z}\)</span> is then modeled as a multivariate Gaussian.</p>
+</section>
+<section id="loss-function">
+<h3><span class="section-number">6.1.4. </span>Loss function<a class="headerlink" href="#loss-function" title="Link to this heading">#</a></h3>
+<p>To train the RealNVP, we need a loss function. Let <span class="math notranslate nohighlight">\(f_a, f_b\)</span> be two coupling layers, stacking them gives us the Jacobian:</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial f_b\circ f_a}{\partial \mathbf{x}_a^T}(\mathbf{x}_a) = \frac{\partial f_a}{\partial \mathbf{x}_a^T}(\mathbf{x}_a) \frac{\partial f_b}{\partial \mathbf{x}_b^T}(\mathbf{x}_b=f_a(\mathbf{x}_a))\]</div>
+<p>Taking determinants on both sides gives us:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align*}
+\bigg|\frac{\partial f_b\circ f_a}{\partial \mathbf{x}_a^T}(\mathbf{x}_a)\bigg| &amp;= \bigg|\frac{\partial f_a}{\partial \mathbf{x}_a^T}(\mathbf{x}_a)\bigg|\cdot \bigg|\frac{\partial f_b}{\partial \mathbf{x}_b^T}(\mathbf{x}_b=f_a(\mathbf{x}_a))\bigg|\\
+&amp;= \exp(s_a(\mathbf{x}_{1:d/2}))\cdot \exp(s_b(\mathbf{x}_{1:d/2}))\\
+&amp;= \exp(s_a(\mathbf{x}_{1:d/2}) + s_b(\mathbf{x}_{1:d/2}))
+\end{align*}
+\end{split}\]</div>
+<p>This implies that the Jacobian of the stacked layers is essentially the exponential of the summed scale outputs. Therefore, the log-likelihood can be written as:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align*}
+\log p_{\mathbf{x}}(x) &amp;= \log p_{\mathbf{z}}(z) + \log\bigg|\frac{\partial f}{\partial x}\bigg|\\
+&amp;= \log p_{\mathbf{z}}(z) + \log \exp\bigg(-\sum_i s_i(\mathbf{x}_{1:d})\bigg)\\
+&amp;= -\frac{1}{2}\log(2\pi) -\frac{(f(\mathbf{x}))^2}{2} + \sum_i s_i(\mathbf{x}_{1:d})\\
+\end{align*}
+\end{split}\]</div>
+<p>Each of these components can be computed efficiently during the forward pass.</p>
+</section>
+</section>
+<section id="implementation">
+<h2><span class="section-number">6.2. </span>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h2>
+<p>Below we implement a RealNVP and train the model on MNIST and CIFAR10 datasets. We focus on implementing the coupling layer and the RealNVP block.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -526,52 +580,9 @@ document.write(`
 </div>
 </details>
 </div>
-</section>
-<section id="resnet-implementation">
-<h2><span class="section-number">6.2. </span>Resnet implementation<a class="headerlink" href="#resnet-implementation" title="Link to this heading">#</a></h2>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">WeightNormConv2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">WeightNormConv2d</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">weight_norm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">weight_norm</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">))</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight_norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-<span class="k">class</span> <span class="nc">ResnetBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ResnetBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">),</span>
-                                 <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-                                 <span class="n">WeightNormConv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
-                                 <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">),</span>
-                                 <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-                                 <span class="n">WeightNormConv2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">out</span>
-
-<span class="k">class</span> <span class="nc">Resnet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">hidden_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">n_layers</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Resnet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="p">[</span><span class="n">WeightNormConv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">hidden_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-                    <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">+=</span> <span class="p">[</span><span class="n">ResnetBlock</span><span class="p">(</span><span class="n">hidden_channels</span><span class="p">,</span> <span class="n">hidden_channels</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_layers</span><span class="p">)]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
-                     <span class="n">WeightNormConv2d</span><span class="p">(</span><span class="n">hidden_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</section>
 <section id="coupling-layer-implementation">
-<h2><span class="section-number">6.3. </span>Coupling layer implementation<a class="headerlink" href="#coupling-layer-implementation" title="Link to this heading">#</a></h2>
+<h3><span class="section-number">6.2.1. </span>Coupling layer implementation<a class="headerlink" href="#coupling-layer-implementation" title="Link to this heading">#</a></h3>
+<p>We first implement the checkerboard and channel binary masks. The <code class="docutils literal notranslate"><span class="pre">requires_grad</span></code> is set to <code class="docutils literal notranslate"><span class="pre">False</span></code> as the binary mask is not learnable. In the implementation of the Coupling layer, we use a single ResNet to generate the scale <span class="math notranslate nohighlight">\(s \)</span> and translation <span class="math notranslate nohighlight">\(t\)</span> parameters. The <code class="docutils literal notranslate"><span class="pre">reverse</span></code> parameter, when set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, reverses the binary mask from <code class="docutils literal notranslate"><span class="pre">b</span></code> to <code class="docutils literal notranslate"><span class="pre">1-b</span></code>. This ensures that all pixels are processed during the forward pass.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">getCheckboardMask</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">):</span>
@@ -587,13 +598,8 @@ document.write(`
     <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">C</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">C</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">mask</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">return</span> <span class="n">mask</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CouplingLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
+<span class="k">class</span> <span class="nc">CouplingLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">hidden_channels</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">n_layers</span><span class="p">,</span> <span class="n">mask_type</span><span class="p">,</span> <span class="n">reverse</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">CouplingLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">st_resnet</span> <span class="o">=</span> <span class="n">Resnet</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">hidden_channels</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">n_layers</span><span class="p">)</span>
@@ -627,7 +633,8 @@ document.write(`
 </div>
 </section>
 <section id="realnvp-implementation">
-<h2><span class="section-number">6.4. </span>RealNVP Implementation<a class="headerlink" href="#realnvp-implementation" title="Link to this heading">#</a></h2>
+<h3><span class="section-number">6.2.2. </span>RealNVP Implementation<a class="headerlink" href="#realnvp-implementation" title="Link to this heading">#</a></h3>
+<p>Moving on the the implementation of the RealNVP block, which essentially follows the structure of Figure 2.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">RealNVPBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -684,6 +691,9 @@ document.write(`
 </div>
 </div>
 </div>
+</section>
+<section id="id1">
+<h3><span class="section-number">6.2.3. </span>RealNVP implementation<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">RealNVP</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -747,8 +757,9 @@ document.write(`
 </div>
 </div>
 </section>
-<section id="training-loop-implementation">
-<h2><span class="section-number">6.5. </span>Training loop implementation<a class="headerlink" href="#training-loop-implementation" title="Link to this heading">#</a></h2>
+<section id="id2">
+<h3><span class="section-number">6.2.4. </span>Loss function<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<p>The loss function follows equation <span class="math notranslate nohighlight">\((1)\)</span>. It is composed of the negative log-likelihood loss of the Multivariate Gaussian, and the Jacobian component.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">loss_fn</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">s_det</span><span class="p">):</span>
@@ -759,6 +770,12 @@ document.write(`
 </div>
 </div>
 </div>
+</section>
+</section>
+<section id="on-mnist">
+<h2><span class="section-number">6.3. </span>On MNIST<a class="headerlink" href="#on-mnist" title="Link to this heading">#</a></h2>
+<p>After implementing RealNVP, we tested its performance on the MNIST dataset. For the scale and translation parameters, we used <span class="math notranslate nohighlight">\(8\)</span> layers of ResNet blocks with <span class="math notranslate nohighlight">\(64\)</span> hidden channels. Three RealNVP blocks were stacked on top of each other. We trained the model for <span class="math notranslate nohighlight">\(30\)</span> epochs with a learning rate of <span class="math notranslate nohighlight">\(10^{-3}\)</span> using the Adam optimizer. <br></p>
+<p>The resulting generated image is shown below. As we can see, the model is capable of generating realistic MNIST images, although some samples exhibit discontinuities. We stopped the training early, so additional training would likely improve the results.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">realnvp</span> <span class="o">=</span> <span class="n">RealNVP</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">hidden_channels</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">n_layers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">n_scales</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -781,7 +798,8 @@ document.write(`
 </div>
 </section>
 <section id="on-cifar10">
-<h2><span class="section-number">6.6. </span>On CIFAR10<a class="headerlink" href="#on-cifar10" title="Link to this heading">#</a></h2>
+<h2><span class="section-number">6.4. </span>On CIFAR10<a class="headerlink" href="#on-cifar10" title="Link to this heading">#</a></h2>
+<p>We then applied the same architecture and hyperparameter settings to the CIFAR10 dataset. The model was able to generate diverse images that resemble those in the CIFAR10 dataset.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">realnvp</span> <span class="o">=</span> <span class="n">RealNVP</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">hidden_channels</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">n_layers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">n_scales</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -869,12 +887,22 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-architecture">6.1. RealNVP architecture</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resnet-implementation">6.2. Resnet implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#coupling-layer-implementation">6.3. Coupling layer implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-implementation">6.4. RealNVP Implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-loop-implementation">6.5. Training loop implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-cifar10">6.6. On CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-architecture">6.1. RealNVP architecture</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#masking-scheme">6.1.1. Masking scheme</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-block">6.1.2. RealNVP Block</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#multiscale-architecture">6.1.3. Multiscale architecture</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loss-function">6.1.4. Loss function</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">6.2. Implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#coupling-layer-implementation">6.2.1. Coupling layer implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-implementation">6.2.2. RealNVP Implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">6.2.3. RealNVP implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">6.2.4. Loss function</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-mnist">6.3. On MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-cifar10">6.4. On CIFAR10</a></li>
 </ul>
   </nav></div>
 

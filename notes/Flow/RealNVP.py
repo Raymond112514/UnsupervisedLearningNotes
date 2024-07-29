@@ -7,6 +7,41 @@ import numpy as np
 import pickle
 from torch.utils.data import TensorDataset, DataLoader
 
+class WeightNormConv2d(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True):
+        super(WeightNormConv2d, self).__init__()
+        self.weight_norm = nn.utils.weight_norm(nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, bias=bias))
+
+    def forward(self, x):
+        return self.weight_norm(x)
+
+class ResnetBlock(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(ResnetBlock, self).__init__()
+        self.net = nn.Sequential(nn.BatchNorm2d(in_channels),
+                                 nn.ReLU(inplace=True),
+                                 WeightNormConv2d(in_channels, out_channels, kernel_size=3, padding=1, bias=False),
+                                 nn.BatchNorm2d(out_channels),
+                                 nn.ReLU(inplace=True),
+                                 WeightNormConv2d(out_channels, out_channels, kernel_size=3, padding=1, bias=False))
+
+    def forward(self, x):
+        out = self.net(x)
+        return x + out
+
+class Resnet(nn.Module):
+    def __init__(self, in_channels, hidden_channels, out_channels, n_layers):
+        super(Resnet, self).__init__()
+        self.net = [WeightNormConv2d(in_channels, hidden_channels, kernel_size=3, padding=1),
+                    nn.ReLU()]
+        self.net += [ResnetBlock(hidden_channels, hidden_channels) for _ in range(n_layers)]
+        self.net += [nn.ReLU(),
+                     WeightNormConv2d(hidden_channels, out_channels, kernel_size=3, padding=1)]
+        self.net = nn.Sequential(*self.net)
+
+    def forward(self, x):
+        return self.net(x)
+
 #####################################################################################################################################################################################################################################################   Training loop                                                                                             #########
 ##################################################################################################################################################################################################################################################
 

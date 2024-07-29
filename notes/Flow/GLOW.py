@@ -7,6 +7,28 @@ import numpy as np
 import pickle
 from torch.utils.data import TensorDataset, DataLoader
 
+class SimpleBlock(nn.Module):
+    def __init__(self, in_channels, out_channels, hidden_channels=512):
+        super(SimpleBlock, self).__init__()
+        self.net = nn.Sequential(nn.Conv2d(in_channels, hidden_channels, kernel_size=3, padding=1),
+                                 nn.ReLU(),
+                                 nn.Conv2d(hidden_channels, hidden_channels, kernel_size=1),
+                                 nn.ReLU(),
+                                 nn.Conv2d(hidden_channels, out_channels, kernel_size=3, padding=1))
+        nn.init.normal_(self.net[0].weight, mean=0, std=0.03)
+        nn.init.normal_(self.net[2].weight, mean=0, std=0.03)
+        nn.init.zeros_(self.net[-1].weight)
+        nn.init.zeros_(self.net[-1].bias)
+
+    def forward(self, x):
+        out = self.net(x)
+        return out
+    
+def loss_fn(z, log_det):
+    nll = (0.5 * z ** 2).sum(-1) + 512 * np.log(2 * np.pi)
+    loss = nll - log_det
+    return loss.mean()
+
 #####################################################################################################################################################################################################################################################   Training loop                                                                                             #########
 ##################################################################################################################################################################################################################################################
 

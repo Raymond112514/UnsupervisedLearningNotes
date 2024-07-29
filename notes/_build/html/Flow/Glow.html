@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -405,12 +405,20 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simple-block-implementation">7.1. Simple block implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#flow-block-implementation">7.2. Flow block implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-of-glow-block">7.3. Implementation of Glow block</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-of-glow-net">7.4. Implementation of glow net</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#glow-on-mnist">7.5. GLOW on MNIST</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#glow-on-cifar10">7.6. GLOW on CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#architecture">7.1. Architecture</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#activation-normalization">7.1.1. Activation normalization</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#invertible-convolution">7.1.2. Invertible convolution</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#affine-coupling-layer">7.1.3. Affine coupling layer</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">7.2. Implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-three-components">7.2.1. The three components</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#glow-coupling-layer">7.2.2. Glow coupling layer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">7.2.3. GLOW</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-mnist">7.3. On MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-cifar10">7.4. On CIFAR10</a></li>
 </ul>
             </nav>
         </div>
@@ -424,7 +432,27 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="glow">
 <h1><span class="section-number">7. </span>GLOW<a class="headerlink" href="#glow" title="Link to this heading">#</a></h1>
-<p>Glow is a model proposed by Pugh et al in 2016. The idea is similar to RealNVP. The idea is to use lots of 1X1 convolution to perform the invertible flow. In this ection we implement this paper and test its performance on MNIST and CIFAR10</p>
+<p>The Glow (Generative Flow with Invertible 1×1 Convolutions) model, proposed by Kingma et al. in 2018, builds upon previous work such as NICE and RealNVP. Unlike NICE and RealNVP, which use checkerboard and channel masks to apply permutations in each coupling layer, Glow introduces invertible 1×1 convolutions as a mechanism for permutation. At a high level, the Glow model is composed of stacks of coupling layers, each containing three major components:</p>
+<ol class="arabic simple">
+<li><p>Activation normalization layer</p></li>
+<li><p>1X1 invertible convolution layer</p></li>
+<li><p>Affine coupling layer</p></li>
+</ol>
+<p>In addition, Glow employs a multiscale architecture, similar to RealNVP, by progressively reducing the dimensionality of the data. After each Glow layer, the model factors out half of the variables, which helps to capture hierarchical features and improve the modeling capacity.</p>
+<section id="architecture">
+<h2><span class="section-number">7.1. </span>Architecture<a class="headerlink" href="#architecture" title="Link to this heading">#</a></h2>
+<section id="activation-normalization">
+<h3><span class="section-number">7.1.1. </span>Activation normalization<a class="headerlink" href="#activation-normalization" title="Link to this heading">#</a></h3>
+</section>
+<section id="invertible-convolution">
+<h3><span class="section-number">7.1.2. </span>Invertible convolution<a class="headerlink" href="#invertible-convolution" title="Link to this heading">#</a></h3>
+</section>
+<section id="affine-coupling-layer">
+<h3><span class="section-number">7.1.3. </span>Affine coupling layer<a class="headerlink" href="#affine-coupling-layer" title="Link to this heading">#</a></h3>
+</section>
+</section>
+<section id="implementation">
+<h2><span class="section-number">7.2. </span>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h2>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -464,33 +492,8 @@ document.write(`
 </div>
 </details>
 </div>
-<section id="simple-block-implementation">
-<h2><span class="section-number">7.1. </span>Simple block implementation<a class="headerlink" href="#simple-block-implementation" title="Link to this heading">#</a></h2>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">hidden_channels</span><span class="o">=</span><span class="mi">512</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">hidden_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-                                 <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
-                                 <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">hidden_channels</span><span class="p">,</span> <span class="n">hidden_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-                                 <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
-                                 <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">hidden_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.03</span><span class="p">)</span>
-        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.03</span><span class="p">)</span>
-        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">zeros_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
-        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">zeros_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">out</span>
-</pre></div>
-</div>
-</div>
-</div>
-</section>
-<section id="flow-block-implementation">
-<h2><span class="section-number">7.2. </span>Flow block implementation<a class="headerlink" href="#flow-block-implementation" title="Link to this heading">#</a></h2>
+<section id="the-three-components">
+<h3><span class="section-number">7.2.1. </span>The three components<a class="headerlink" href="#the-three-components" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ActNorm</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -566,8 +569,8 @@ document.write(`
 </div>
 </div>
 </section>
-<section id="implementation-of-glow-block">
-<h2><span class="section-number">7.3. </span>Implementation of Glow block<a class="headerlink" href="#implementation-of-glow-block" title="Link to this heading">#</a></h2>
+<section id="glow-coupling-layer">
+<h3><span class="section-number">7.2.2. </span>Glow coupling layer<a class="headerlink" href="#glow-coupling-layer" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GlowBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -595,8 +598,8 @@ document.write(`
 </div>
 </div>
 </section>
-<section id="implementation-of-glow-net">
-<h2><span class="section-number">7.4. </span>Implementation of glow net<a class="headerlink" href="#implementation-of-glow-net" title="Link to this heading">#</a></h2>
+<section id="id1">
+<h3><span class="section-number">7.2.3. </span>GLOW<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GLOW</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -668,18 +671,9 @@ document.write(`
 </div>
 </div>
 </section>
-<section id="glow-on-mnist">
-<h2><span class="section-number">7.5. </span>GLOW on MNIST<a class="headerlink" href="#glow-on-mnist" title="Link to this heading">#</a></h2>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">loss_fn</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">log_det</span><span class="p">):</span>
-    <span class="n">nll</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">z</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">512</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
-    <span class="n">loss</span> <span class="o">=</span> <span class="n">nll</span> <span class="o">-</span> <span class="n">log_det</span>
-    <span class="k">return</span> <span class="n">loss</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</div>
+</section>
+<section id="on-mnist">
+<h2><span class="section-number">7.3. </span>On MNIST<a class="headerlink" href="#on-mnist" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">glow</span> <span class="o">=</span> <span class="n">GLOW</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -706,8 +700,8 @@ document.write(`
 </div>
 </div>
 </section>
-<section id="glow-on-cifar10">
-<h2><span class="section-number">7.6. </span>GLOW on CIFAR10<a class="headerlink" href="#glow-on-cifar10" title="Link to this heading">#</a></h2>
+<section id="on-cifar10">
+<h2><span class="section-number">7.4. </span>On CIFAR10<a class="headerlink" href="#on-cifar10" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">glow</span> <span class="o">=</span> <span class="n">GLOW</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -800,12 +794,20 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simple-block-implementation">7.1. Simple block implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#flow-block-implementation">7.2. Flow block implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-of-glow-block">7.3. Implementation of Glow block</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-of-glow-net">7.4. Implementation of glow net</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#glow-on-mnist">7.5. GLOW on MNIST</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#glow-on-cifar10">7.6. GLOW on CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#architecture">7.1. Architecture</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#activation-normalization">7.1.1. Activation normalization</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#invertible-convolution">7.1.2. Invertible convolution</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#affine-coupling-layer">7.1.3. Affine coupling layer</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">7.2. Implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-three-components">7.2.1. The three components</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#glow-coupling-layer">7.2.2. Glow coupling layer</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">7.2.3. GLOW</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-mnist">7.3. On MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-cifar10">7.4. On CIFAR10</a></li>
 </ul>
   </nav></div>
 
