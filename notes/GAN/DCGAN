@@ -1,0 +1,78 @@
+import numpy as np
+import torch
+import torchvision
+import torchvision.transforms as transforms
+import torch.nn as nn
+import torch.optim as optim
+import matplotlib.pyplot as plt
+import torch.nn.functional as F
+
+
+def train_epoch(discriminator, generator, train_loader, optimizer_disc, optimizer_gen):
+    discriminator_loss = 0
+    generator_loss = 0
+    for i, (X, _) in enumerate(train_loader):
+        X = X.to(DEVICE)
+        batch_size = X.size(0)
+
+        # Train the discriminator: real data
+        optimizer_disc.zero_grad()
+        D_real_loss = nn.BCEWithLogitsLoss()(discriminator(X), torch.ones((batch_size, )).to(DEVICE))
+        D_real_loss.backward()
+
+        # Train the discriminator: fake data
+        X_fake = generator(torch.randn(batch_size, 100, 1, 1).to(DEVICE))
+        D_fake_loss = nn.BCEWithLogitsLoss()(discriminator(X_fake), torch.zeros(batch_size, ).to(DEVICE))
+        D_fake_loss.backward()
+
+        # Train the discriminator
+        D_loss = (D_real_loss + D_fake_loss) / 2
+        optimizer_disc.step()
+
+        # Train the generator
+        optimizer_gen.zero_grad()
+        X_fake = generator(torch.randn(batch_size, 100, 1, 1).to(DEVICE))
+        G_loss = nn.BCEWithLogitsLoss()(discriminator(X_fake), torch.ones(batch_size, ).to(DEVICE))
+        G_loss.backward()
+        optimizer_gen.step()
+
+        discriminator_loss += D_loss.item()
+        generator_loss += G_loss.item()
+    return discriminator_loss / len(train_loader), generator_loss / len(train_loader)
+
+def plot_samples(generator, n_samples, device="cpu", title="Generated images"):
+    samples = generator(torch.randn(n_samples, 100, 1, 1).to(device))
+    samples = ((samples + 1) * 0.5)
+    samples = samples.clamp(0, 1)
+    samples = samples.cpu().detach().numpy()
+    samples = np.transpose(samples, (0, 2, 3, 1))
+    fig, ax = plt.subplots(1, 6, figsize=(12, 2))
+    fig.suptitle(title, fontsize=16)
+    for i in range(6):
+        ax[i].imshow(samples[i])
+        ax[i].axis('off')
+    plt.show()
+
+def train(generator, discriminator, train_loader, epochs, optimizerD, optimizerG):
+    for epoch in range(epochs):
+        disc_loss, gen_loss = train_epoch(discriminator, generator, train_loader, optimizerD, optimizerG)
+        plot_samples(generator, 6, device=DEVICE, title=f"Epoch {epoch + 1}, D_loss: {disc_loss:.4f}, G_loss: {gen_loss:.4f}")
+        
+def plot_samples(n_samples, generator) 
+    noise = torch.randn(n_samples, 100, 1, 1).to(DEVICE)
+    samples = generator(noise)
+    samples = ((samples + 1) * 0.5)
+    samples = samples.clamp(0, 1)
+    samples = samples.cpu().detach().numpy()
+    samples = np.transpose(samples, (0, 2, 3, 1))
+
+    grid_size = int(np.sqrt(n_samples))
+    fig, axes = plt.subplots(grid_size, grid_size, figsize=(6, 6))
+    axes = axes.flatten()
+    for i in range(n_samples):
+        axes[i].imshow(samples[i], cmap='gray')
+        axes[i].axis('off')
+    plt.subplots_adjust(wspace=0.1, hspace=0.1)
+    plt.show()
+    
+

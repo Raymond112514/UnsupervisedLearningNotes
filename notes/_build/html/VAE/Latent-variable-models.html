@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>8. Latent variable models &#8212; Note on Deep Unsupervised Learning</title>
+    <title>9. Latent variable models &#8212; Note on Deep Unsupervised Learning</title>
   
   
   
@@ -72,8 +72,8 @@ const thebe_selector_output = ".output, .cell_output"
     <script>DOCUMENTATION_OPTIONS.pagename = 'VAE/Latent-variable-models';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="9. Convolutional VAE" href="Convolution-VAE.html" />
-    <link rel="prev" title="7. GLOW" href="../Flow/Glow.html" />
+    <link rel="next" title="10. Convolutional VAE" href="Convolution-VAE.html" />
+    <link rel="prev" title="8. GLOW" href="../Flow/Glow.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -188,30 +188,34 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1"><a class="reference internal" href="../Autoregressive/CharRNN.html">2. CharRNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Autoregressive/MADE.html">3. MADE</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Autoregressive/PixelCNN.html">4. PixelCNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Autoregressive/iGPT.html">5. Causal transformer: iGPT</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">B. Flow based model</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../Flow/Flow-based-models.html">5. Flow based models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Flow/RealNVP.html">6. Real NVP</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Flow/Glow.html">7. GLOW</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Flow/Flow-based-models.html">6. Flow based models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Flow/RealNVP.html">7. Real NVP</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Flow/Glow.html">8. GLOW</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">C. Variational autoencoder</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">8. Latent variable models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Convolution-VAE.html">9. Convolutional VAE</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Conditional-VAE.html">10. Conditional VAE</a></li>
-<li class="toctree-l1"><a class="reference internal" href="VQVAE.html">11. VQ-VAE</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">9. Latent variable models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Convolution-VAE.html">10. Convolutional VAE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Conditional-VAE.html">11. Conditional VAE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="VQVAE.html">12. VQVAE</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">D. Generative adversarial network</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../GAN/DCGAN.html">12. DCGAN</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../GAN/WGAN.html">13. Wasserstein GAN</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../GAN/ConditionalGAN.html">14. Conditional GAN</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../GAN/CycleGAN.html">15. CycleGAN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GAN/DCGAN.html">13. DCGAN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GAN/WGAN.html">14. Wasserstein GAN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GAN/ConditionalGAN.html">15. Conditional GAN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GAN/CycleGAN.html">16. CycleGAN</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">E. Diffusion model</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../Diffusion/Diffusion-model.html">16. Diffusion models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Diffusion/Diffusion-model.html">17. Diffusion models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Diffusion/DDPM.html">18. Denoising diffusion probabilistic model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Diffusion/Classifier-free-guidance.html">19. Classifier free guidance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Diffusion/DiT.html">20. Diffusion transformer</a></li>
 </ul>
 
     </div>
@@ -407,8 +411,8 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variational-autoencoder">8.1. Variational autoencoder</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reparameterization-trick">8.2. Reparameterization trick</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variational-autoencoder">9.1. Variational autoencoder</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reparameterization-trick">9.2. Reparameterization trick</a></li>
 </ul>
             </nav>
         </div>
@@ -421,7 +425,7 @@ document.write(`
                 <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="latent-variable-models">
-<h1><span class="section-number">8. </span>Latent variable models<a class="headerlink" href="#latent-variable-models" title="Link to this heading">#</a></h1>
+<h1><span class="section-number">9. </span>Latent variable models<a class="headerlink" href="#latent-variable-models" title="Link to this heading">#</a></h1>
 <p>In latent variable models, we assume that the data distribution <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> is dependent on some unobserved variables called latent variables <span class="math notranslate nohighlight">\(\mathbf{z}\)</span>.</p>
 <head>
   <meta charset="UTF-8">
@@ -462,7 +466,7 @@ document.write(`
 \end{split}\]</div>
 <p>How should we choose the distribution <span class="math notranslate nohighlight">\(q(\mathbf{z}\)</span>. Ideally, we want the lower bound to be as tight as possible. The following theorem shows that this is acheived when <span class="math notranslate nohighlight">\(q(\mathbf{z})\)</span> is the posterior distribution <span class="math notranslate nohighlight">\(p(\mathbf{z}|\mathbf{x})\)</span>.</p>
 <div class="proof theorem admonition" id="my-theorem">
-<p class="admonition-title"><span class="caption-number">Theorem 8.1 </span> (ELBO)</p>
+<p class="admonition-title"><span class="caption-number">Theorem 9.1 </span> (ELBO)</p>
 <section class="theorem-content" id="proof-content">
 <p>The lower bound of</p>
 <div class="math notranslate nohighlight">
@@ -491,7 +495,7 @@ document.write(`
 <p>The derivation above provides another proof for Theorem 1. It explicitly demonstrates that the term is a lower bound and becomes tighter as <span class="math notranslate nohighlight">\(q_{\phi}(\mathbf{z}|\mathbf{x})\)</span> approximates <span class="math notranslate nohighlight">\(p(\mathbf{z}|\mathbf{x})\)</span> more closely, measured by the KL-divergence. The lower bound is known as the Evidence Lower Bound (ELBO), and we use it as a proxy for the true log-likelihood. Instead of maximizing the log-likelihood directly, we optimize over
 <span class="math notranslate nohighlight">\(\theta\)</span> and <span class="math notranslate nohighlight">\(\phi\)</span> to make ELBO as large as possible.</p>
 <section id="variational-autoencoder">
-<h2><span class="section-number">8.1. </span>Variational autoencoder<a class="headerlink" href="#variational-autoencoder" title="Link to this heading">#</a></h2>
+<h2><span class="section-number">9.1. </span>Variational autoencoder<a class="headerlink" href="#variational-autoencoder" title="Link to this heading">#</a></h2>
 <p>We can further decompose ELBO as follows</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -509,7 +513,7 @@ document.write(`
 </ol>
 </section>
 <section id="reparameterization-trick">
-<h2><span class="section-number">8.2. </span>Reparameterization trick<a class="headerlink" href="#reparameterization-trick" title="Link to this heading">#</a></h2>
+<h2><span class="section-number">9.2. </span>Reparameterization trick<a class="headerlink" href="#reparameterization-trick" title="Link to this heading">#</a></h2>
 <p>Now it remains to thing about how to parameterize the distributions. The decoder <span class="math notranslate nohighlight">\(p_{\theta}(\mathbf{x}|\mathbf{z})\)</span> is usually parameterized by some neural network, where as the encoder <span class="math notranslate nohighlight">\(q_{\phi}(\mathbf{z}|\mathbf{x})\)</span> and the prior <span class="math notranslate nohighlight">\(p(\mathbf{z})\)</span> is commonly modeled as a multivariate Gaussian</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}
@@ -575,7 +579,7 @@ document.write(`
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title"><span class="section-number">7. </span>GLOW</p>
+        <p class="prev-next-title"><span class="section-number">8. </span>GLOW</p>
       </div>
     </a>
     <a class="right-next"
@@ -583,7 +587,7 @@ document.write(`
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title"><span class="section-number">9. </span>Convolutional VAE</p>
+        <p class="prev-next-title"><span class="section-number">10. </span>Convolutional VAE</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -603,8 +607,8 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variational-autoencoder">8.1. Variational autoencoder</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reparameterization-trick">8.2. Reparameterization trick</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#variational-autoencoder">9.1. Variational autoencoder</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reparameterization-trick">9.2. Reparameterization trick</a></li>
 </ul>
   </nav></div>
 

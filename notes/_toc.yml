@@ -11,6 +11,7 @@ parts:
   - file: Autoregressive/CharRNN.ipynb
   - file: Autoregressive/MADE.ipynb
   - file: Autoregressive/PixelCNN.ipynb
+  - file: Autoregressive/iGPT.ipynb
 - caption: B. Flow based model
   numbered: True
   chapters:
@@ -35,3 +36,6 @@ parts:
   numbered: True
   chapters:
   - file: Diffusion/Diffusion-model.ipynb
+  - file: Diffusion/DDPM.ipynb
+  - file: Diffusion/Classifier-free-guidance.ipynb
+  - file: Diffusion/DiT.ipynb
