@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -411,13 +411,15 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#grayscale-pixelcnn">4.1. Grayscale PixelCNN</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#masked-convolution">4.1.1. Masked convolution</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">4.1.2. PixelCNN</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pixelcnn-architechture">4.1. PixelCNN Architechture</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pixelcnn-implementation">4.2. PixelCNN Implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#masked-convolution-implementation">4.2.1. Masked Convolution Implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">4.2.2. PixelCNN Implementation</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pixelcnn-with-independent-color-channel">4.2. PixelCNN with independent color channel</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pixelcnn-with-dependent-color-channels">4.3. PixelCNN with dependent color channels</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#grayscale-mnist">4.3. Grayscale MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#colored-mnist-independent-channels">4.4. Colored MNIST: Independent Channels</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#colored-mnist-dependent-color-channels">4.5. Colored MNIST: Dependent Color Channels</a></li>
 </ul>
             </nav>
         </div>
@@ -431,10 +433,34 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="pixelcnn">
 <h1><span class="section-number">4. </span>PixelCNN<a class="headerlink" href="#pixelcnn" title="Link to this heading">#</a></h1>
-<p>PixelCNN is another famous masking-based autoregressive model, introduced in the paper “Pixel Recurrent Neural Networks” by Aaron van den Oord in 2016. As its name suggests, the model applies a special mask on the convolutional filters. Oord proposed two types of masks: Type A and Type B. In the Type A mask, the current pixel can depend only on previous pixels. In contrast, the Type B mask allows the current pixel to depend on previous pixels. The rationale behind this design is that, once the Type A mask is applied in the first layer, there is no need to block the information flow, as the autoregressive property is guaranteed to hold.<br></p>
-<p>PixelCNN consists of stacks of residual blocks build with masked convolution. The architecture of these residual blocks in shown in Figure 2. Between each residual block, batch normalization and ReLU activation is inserted. Below, we implement a PixelCNN to model grayscale images.</p>
-<section id="grayscale-pixelcnn">
-<h2><span class="section-number">4.1. </span>Grayscale PixelCNN<a class="headerlink" href="#grayscale-pixelcnn" title="Link to this heading">#</a></h2>
+<p>PixelCNN, like MADE, is a masking-based autoregressive model, is a masking-based autoregressive model introduced in the paper “Pixel Recurrent Neural Networks” by Aaron van den Oord in 2016. As its name implies, PixelCNN applies a special mask on the convolutional filters to ensure that the prediction for each pixel is dependent only on the previously observed pixels and not on future ones.</p>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Autoregressive/figures/pixelcnn_intro.png" style="max-width: 35%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
+    <strong> Figure 1 </strong>: Example of PixelCNN convolutional filter with kernel size 5. The current pixel (pixel 13) is only allowed to depend on previous pixels (pixel 1-12). Future pixels (pixel 14-25) are masked by setting the convolutional filters to 0. 
+</p>
+<p>In the paper, Oord proposed two types of masks: Type A and Type B. The Type A mask ensures that the current pixel can only depend on previously processed pixels. In contrast, the Type B mask allows the current pixel to depend on both previous pixels and the same pixel in the current layer. The idea behind this design is that once the Type A mask is applied in the initial layer, the autoregressive property is enforced, therefore there is no need to block information flow in the subsequent layers.</p>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Autoregressive/figures/pixelcnn_mask.png" style="max-width: 40%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
+    <strong> Figure 2 </strong>: Type A and type B mask. The blue regions are set to 1, while the gray regions are set to 0. 
+</p><section id="pixelcnn-architechture">
+<h2><span class="section-number">4.1. </span>PixelCNN Architechture<a class="headerlink" href="#pixelcnn-architechture" title="Link to this heading">#</a></h2>
+<p>Masked convolutional filters are the fundamental building blocks of PixelCNN. In the paper, the author stacks these filters according to the residual block architecture. Each residual block is followed by batch normalization and a ReLU activation function. The final output layer consists of a single convolutional filter with an output channel dimension of <code class="docutils literal notranslate"><span class="pre">input_channel_dimension</span></code> <span class="math notranslate nohighlight">\(\times\)</span> <code class="docutils literal notranslate"><span class="pre">num_classes</span></code>. The resulting output is then reshaped to produce the logits for the image.</p>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Autoregressive/figures/pixelcnn_resblock.png" style="max-width: 40%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
+    <strong> Figure 3 </strong>: Architecture of PixelCNN. The output shape of each block is shown below. We stack K residual blocks, each containing 3 masked convolutional filters with type B mask. The kernel size of the filters are 1, 7, and 1, respectively. The number of channel is also reduced by half in the middle filter.
+</p>
+<p>In the following section, we will implement PixelCNN from scratch and evaluate its performance on both binarized and colored MNIST data. The colored MNIST data is sourced from the Berkeley CS294-158 Deep Unsupervised Learning course HW1. The colors in this dataset are encoded with 4 bits, which makes it easier to model compared to the standard 8-bit color encoding.</p>
+</section>
+<section id="pixelcnn-implementation">
+<h2><span class="section-number">4.2. </span>PixelCNN Implementation<a class="headerlink" href="#pixelcnn-implementation" title="Link to this heading">#</a></h2>
+<section id="masked-convolution-implementation">
+<h3><span class="section-number">4.2.1. </span>Masked Convolution Implementation<a class="headerlink" href="#masked-convolution-implementation" title="Link to this heading">#</a></h3>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -478,9 +504,6 @@ document.write(`
 </div>
 </details>
 </div>
-<section id="masked-convolution">
-<h3><span class="section-number">4.1.1. </span>Masked convolution<a class="headerlink" href="#masked-convolution" title="Link to this heading">#</a></h3>
-<p>The implementation of the masked convolution and the residual block is shown below. To test the implementation, we can print out the masked convolution of a small kernel size. Note that both types of masks follow our expectations.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MaskedConv2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -528,8 +551,7 @@ document.write(`
                                  <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
                                  <span class="n">MaskedConv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">mask_type</span><span class="o">=</span><span class="s2">&quot;B&quot;</span><span class="p">),</span>
                                  <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
-                                 <span class="n">MaskedConv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mask_type</span><span class="o">=</span><span class="s2">&quot;B&quot;</span><span class="p">),</span>
-                                 <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">())</span>
+                                 <span class="n">MaskedConv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mask_type</span><span class="o">=</span><span class="s2">&quot;B&quot;</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -543,8 +565,7 @@ document.write(`
 </div>
 </section>
 <section id="id1">
-<h3><span class="section-number">4.1.2. </span>PixelCNN<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
-<p>Next we implement the PixelCNN. Note that before passing the input image into our network, we normalize it so that all elements lies in <span class="math notranslate nohighlight">\([-1, 1]\)</span>.</p>
+<h3><span class="section-number">4.2.2. </span>PixelCNN Implementation<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">PixelCNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -615,7 +636,11 @@ document.write(`
 </div>
 </div>
 </div>
-<p>After implementing the PixelCNN, we tested it on the binarized MNIST dataset. For the model, we set the hidden channels for the residual blocks to be <span class="math notranslate nohighlight">\(120\)</span>, and we stacked <span class="math notranslate nohighlight">\(8\)</span> layers of residual blocks. The model was trained for <span class="math notranslate nohighlight">\(10\)</span> epochs with a learning rate of <span class="math notranslate nohighlight">\(10^{-3}\)</span>. Note that the model indeed generates images that resemble the actual MNIST dataset.</p>
+</section>
+</section>
+<section id="grayscale-mnist">
+<h2><span class="section-number">4.3. </span>Grayscale MNIST<a class="headerlink" href="#grayscale-mnist" title="Link to this heading">#</a></h2>
+<p>After implementing the PixelCNN, we tested it on the binarized MNIST dataset. We trained a PixelCNN with hidden channels set to <span class="math notranslate nohighlight">\(120\)</span>. We stacked <span class="math notranslate nohighlight">\(8\)</span> layers of residual blocks. The model is trained for around <span class="math notranslate nohighlight">\(10\)</span> epochs using Adam optimizer with learning rate of <span class="math notranslate nohighlight">\(10^{-3}\)</span>. The generated image is shown below.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pixelcnn</span> <span class="o">=</span> <span class="n">PixelCNN</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">hidden_channels</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_layers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">28</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">28</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -626,24 +651,29 @@ document.write(`
 </div>
 </div>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_samples</span><span class="p">(</span><span class="n">pixelcnn</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="n">DEVICE</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
 <img alt="../_images/6acdf7e01fe6ca13023e6c4c17a17178ec1e94b4e4b9a38361150fa9c34c43bc.png" src="../_images/6acdf7e01fe6ca13023e6c4c17a17178ec1e94b4e4b9a38361150fa9c34c43bc.png" />
 </div>
 </div>
 </section>
-</section>
-<section id="pixelcnn-with-independent-color-channel">
-<h2><span class="section-number">4.2. </span>PixelCNN with independent color channel<a class="headerlink" href="#pixelcnn-with-independent-color-channel" title="Link to this heading">#</a></h2>
-<p>Now, we consider the case where there is more than one color channel. One way to approach this is to assume that each channel is independent of the others and model each separately. Formally, we model:</p>
+<section id="colored-mnist-independent-channels">
+<h2><span class="section-number">4.4. </span>Colored MNIST: Independent Channels<a class="headerlink" href="#colored-mnist-independent-channels" title="Link to this heading">#</a></h2>
+<p>We now consider the case with multiple color channels. One approach is to treat each color channel as independent and model each channel separately. Formally, we model:</p>
 <div class="math notranslate nohighlight">
 \[p_{\theta}(\mathbf{x}) = \prod_{i=1}^{HW}\prod_{c=1}^{C} p_{\theta}(x_i^c|x_{&lt;i})\]</div>
-<p>In this case, there is no need to change our original implementation except for modifying the input channel to match the number of color channels. We follow the same architecture as in the grayscale MNIST case and test the model on colored MNIST with 4-bit color. The results are shown below. Note that the model is once again able to learn to generate colored handwritten digits.</p>
+<p>In this case, there is no need to change our original implementation except for adjusting the input channels to match the number of color channels. We use the same architecture as in the grayscale MNIST case and test the model on the colored MNIST dataset with 4-bit color encoding. The generated samples are shown below. Note that the model is once again able to learn the colored handwritten digits.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pixelcnn</span> <span class="o">=</span> <span class="n">PixelCNN</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">hidden_channels</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_layers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">28</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">28</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -654,22 +684,29 @@ document.write(`
 </div>
 </div>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_samples</span><span class="p">(</span><span class="n">pixelcnn</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="n">DEVICE</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
 <img alt="../_images/584b7241b4e6dc8e1a80f02f24f9540c46e0e45bcb52a5d3e30d4f48581fc8a6.png" src="../_images/584b7241b4e6dc8e1a80f02f24f9540c46e0e45bcb52a5d3e30d4f48581fc8a6.png" />
 </div>
 </div>
 </section>
-<section id="pixelcnn-with-dependent-color-channels">
-<h2><span class="section-number">4.3. </span>PixelCNN with dependent color channels<a class="headerlink" href="#pixelcnn-with-dependent-color-channels" title="Link to this heading">#</a></h2>
-<p>In practice, however, the assumption of independent color channels may not hold.</p>
+<section id="colored-mnist-dependent-color-channels">
+<h2><span class="section-number">4.5. </span>Colored MNIST: Dependent Color Channels<a class="headerlink" href="#colored-mnist-dependent-color-channels" title="Link to this heading">#</a></h2>
+<p>We can also drop the independence assumption and model dependent color channels</p>
 <div class="math notranslate nohighlight">
 \[p_{\theta}(\mathbf{x}) = \prod_{i=1}^{HW}\prod_{c=1}^{C} p_{\theta}(x_i^c|x_{i}^{&lt;c}, x_{&lt;i})\]</div>
+<p>In this case, we need to modify our masking scheme slightly.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MaskedConv2d</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -716,6 +753,7 @@ document.write(`
 </div>
 </div>
 </div>
+<p>We tested PixelCNN with dependent color channels using the same architecture and hyperparameter setting as above. The generated image is shown below. The generated image seems to be smoother and less noisy compared to the case of independent color channels.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pixelcnn</span> <span class="o">=</span> <span class="n">PixelCNN</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">hidden_channels</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_layers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">28</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">28</span><span class="p">,</span> <span class="n">color_independent</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -803,13 +841,15 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#grayscale-pixelcnn">4.1. Grayscale PixelCNN</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#masked-convolution">4.1.1. Masked convolution</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">4.1.2. PixelCNN</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pixelcnn-architechture">4.1. PixelCNN Architechture</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pixelcnn-implementation">4.2. PixelCNN Implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#masked-convolution-implementation">4.2.1. Masked Convolution Implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">4.2.2. PixelCNN Implementation</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pixelcnn-with-independent-color-channel">4.2. PixelCNN with independent color channel</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pixelcnn-with-dependent-color-channels">4.3. PixelCNN with dependent color channels</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#grayscale-mnist">4.3. Grayscale MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#colored-mnist-independent-channels">4.4. Colored MNIST: Independent Channels</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#colored-mnist-dependent-color-channels">4.5. Colored MNIST: Dependent Color Channels</a></li>
 </ul>
   </nav></div>
 

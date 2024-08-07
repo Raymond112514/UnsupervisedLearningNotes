@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -415,10 +415,10 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="autoregressive-models">
 <h1><span class="section-number">1. </span>Autoregressive models<a class="headerlink" href="#autoregressive-models" title="Link to this heading">#</a></h1>
-<p>Assuming that the data <span class="math notranslate nohighlight">\(\mathbf{x}\in \mathbb{R}^D\)</span>, say <span class="math notranslate nohighlight">\(\mathbf{x}=[x_1, x_2,..., x_D]\)</span>, then the parameterized distribution of <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> can be written as <span class="math notranslate nohighlight">\(p_{\theta}(\mathbf{x})=p_{\theta}(x_1, x_2,..., x_D)\)</span>. Note that if there is a Bayes net structure on the variables, then we can decompose the distribution as</p>
+<p>Suppose that the data <span class="math notranslate nohighlight">\(\mathbf{x}=[x_1, x_2,..., x_D]\)</span> lies in <span class="math notranslate nohighlight">\(D\)</span> dimensional space. Usually the joint distribution <span class="math notranslate nohighlight">\(p(x_1, x_2,..., x_D)\)</span> is too complex to model. For example, if <span class="math notranslate nohighlight">\(x_i\)</span> only takes two values, <span class="math notranslate nohighlight">\(0\)</span> and <span class="math notranslate nohighlight">\(1\)</span>, then modeling <span class="math notranslate nohighlight">\(p(x_1, x_2, x_3, x_4)\)</span> requires <span class="math notranslate nohighlight">\(2^4 = 16\)</span> parameters. However, for binary images of shape <span class="math notranslate nohighlight">\(28 \times 28\)</span>, we would need <span class="math notranslate nohighlight">\(2^{28^2} \approx 10^{236}\)</span> parameters! To address this, we can decompose the joint distribution into simpler conditional distributions. In particular, if there is a Bayes net structure on the variables, we can exploit this and decompose the distribution as</p>
 <div class="math notranslate nohighlight">
 \[p_{\theta}(x_1, x_2,..., x_D) =\prod_i p(x_i|\text{Parent}(x_i))\]</div>
-<p>Where <span class="math notranslate nohighlight">\(\text{Parent}(x_i)\)</span> denote the parent nodes of <span class="math notranslate nohighlight">\(x_i\)</span>. However, it is not obvious which Bayes net structure one should assume, and therefore the safest option is to consider a fully expressive Bayes net structure. By using the product rule, we have</p>
+<p>Where <span class="math notranslate nohighlight">\(\text{Parent}(x_i)\)</span> denote the parent nodes of <span class="math notranslate nohighlight">\(x_i\)</span>. However, it is not obvious which Bayes net structure we should assume, and therefore the safest option is to consider a fully expressive Bayes net. By using the product rule, we have</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
@@ -426,15 +426,17 @@ document.write(`
     &amp;= \prod_i p(x_i|\mathbf{x}_{&lt;i})
 \end{align*}
 \end{split}\]</div>
-<p>Where <span class="math notranslate nohighlight">\(x_{&lt;i}\)</span> denote the variables <span class="math notranslate nohighlight">\(x_1, x_2,..., x_{i-1}\)</span>. Autoregressive models attempt to model each conditional distribution <span class="math notranslate nohighlight">\(p(x_i|\mathbf{x}_{&lt;i})\)</span> jointly. The problem with training the conditions separately is that it is</p>
+<p>Where <span class="math notranslate nohighlight">\(x_{&lt;i}\)</span> denote the variables <span class="math notranslate nohighlight">\(x_1, x_2,..., x_{i-1}\)</span>. In autoregressive models, we attempt to learn the conditional distributions <span class="math notranslate nohighlight">\(p(x_i|\mathbf{x}_{&lt;i})\)</span>. One design choice is to parameterize and learn these conditionals separately; however, it is</p>
 <ol class="arabic simple">
-<li><p>Computationally expensive.</p></li>
+<li><p>Computationally expensive, and</p></li>
 <li><p>No parameter sharing among different conditionals</p></li>
 </ol>
-<p>The model is trained on the log-likelihood:</p>
+<p>Therefore, in practice, we typically model the conditionals jointly. The model is trained by maximizing the usual log-likelihood objective:</p>
 <div class="math notranslate nohighlight">
 \[\log p(x) = \sum_i \log p(x_i|\mathbf{x}_{&lt;i})\]</div>
-<p>In this section, we look at some examples of autoregressive models.</p>
+<p>and sampling is done sequentially as follows:</p>
+<div class="math notranslate nohighlight">
+\[x_0\sim p(x_0)\Longrightarrow x_1\sim p(x_1|x_0)\Longrightarrow x_2\sim p(x_2|x_1, x_0) \Longrightarrow...\Longrightarrow p(x_D|x_{D-1}, x_{D-2},..., x_{1})\]</div>
 </section>
 
     <script type="text/x-thebe-config">

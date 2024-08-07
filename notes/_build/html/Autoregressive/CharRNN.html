@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -429,10 +429,10 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="charrnn">
 <h1><span class="section-number">2. </span>CharRNN<a class="headerlink" href="#charrnn" title="Link to this heading">#</a></h1>
-<p>Recall that we want to model the conditionals</p>
+<p>If we want to model the conditionals</p>
 <div class="math notranslate nohighlight">
 \[p(x_1, x_2,..., x_D) = \prod_{i} p(x_i|\mathbf{x}_{&lt;i})\]</div>
-<p>Jointly. Note that such models must be able to accept variable length inputs. One idea is to use a reccurent neural network to parameterize the conditionals. Conditioned on the previous variables <span class="math notranslate nohighlight">\(x_1,..., x_{i-1}\)</span>, the RNN estimates the probability distribution of the next token. <br></p>
+<p>jointly, the model must be capable of handling variable-length inputs. A recurrent neural network (RNNs) is a natural choice for this task. Given the previous variables <span class="math notranslate nohighlight">\(x_1, \ldots, x_{i-1}\)</span>, the RNN estimates the probability distribution of the next token <span class="math notranslate nohighlight">\(p(x_i \mid x_{i-1}, x_{i-2}, \ldots, x_1)\)</span> (Figure 1).</p>
 <head>
   <meta charset="UTF-8">
   <title>Katex</title>
@@ -441,13 +441,21 @@ document.write(`
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
 </head>
 <div style="display: flex; justify-content: center;">
- <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Autoregressive/figures/charrnn_architecture.png" style="max-width: 50%; height: auto;">  
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Autoregressive/figures/RNN.png" style="max-width: 50%; height: auto;">  
 </div>
 <p style="text-align: center; font-size: 14px;"> 
-    <strong> Figure 1 </strong>: Architecture of the Character-level RNN. 
+    <strong> Figure 1 </strong>: RNN based autoregressive model. 
 </p>
-<p>One such instance of a RNN model is CharRNN, proposed by Andrej Karpathy in 2015. The model is originally trained on a corpus of text to generate new task. In this note, to save the computation, we simplify the task to generate binarized MNIST digits. To do so, we first preprocess the MNIST data so that each image is binarized to and one hot encoded.</p>
-<div class="cell tag_hide-cell docutils container">
+<p>The CharRNN, proposed by Andrej Karpathy in 2015, is an example of an RNN-based model designed for this purpose. It was originally trained on a large corpus of text to generate new sentences. In this section, we instead use CharRNN to model binarized MNIST data. To do so, we flatten the MNIST data into a sequence and one-hot encode the digits.</p>
+<section id="charrnn-implementation">
+<h2><span class="section-number">2.1. </span>CharRNN Implementation<a class="headerlink" href="#charrnn-implementation" title="Link to this heading">#</a></h2>
+<p>For our implementation of CharRNN, we follow a similar architecture to that described in the original blog. We use a 2-layer LSTM with 128 hidden dimensions and a dropout rate of <span class="math notranslate nohighlight">\(0.2\)</span>. The output of the LSTM is then fed into a 2-layer feedforward network with ReLU activation and 128 hidden units. The model outputs 2 real numbers, representing the logits for classes <span class="math notranslate nohighlight">\(0\)</span> and <span class="math notranslate nohighlight">\(1\)</span>.</p>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Autoregressive/figures/CharRNN.png" style="max-width: 50%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px;"> 
+    <strong> Figure 2 </strong>: CharRNN architecture
+</p><div class="cell tag_hide-cell docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
 <span class="collapsed">Show code cell content</span>
@@ -496,9 +504,6 @@ document.write(`
 </div>
 </details>
 </div>
-<section id="charrnn-implementation">
-<h2><span class="section-number">2.1. </span>CharRNN Implementation<a class="headerlink" href="#charrnn-implementation" title="Link to this heading">#</a></h2>
-<p>For our implementation of the CharRNN, we follow a similar architecture as in the original CharRNN. We used 2-layer LSTM layers with 128 hidden dimensions and dropout <span class="math notranslate nohighlight">\(0.2\)</span>. The output of the LSTM is then passed into a <span class="math notranslate nohighlight">\(2\)</span> layer feed forward layer with ReLU activation and 128 hidden units. The model outputs <span class="math notranslate nohighlight">\(2\)</span> real numbers, representing the logits for class <span class="math notranslate nohighlight">\(0\)</span> and <span class="math notranslate nohighlight">\(1\)</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CharRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -557,12 +562,10 @@ document.write(`
 </div>
 </div>
 </div>
-<p>We train the model for around 200 epochs using Adam optimizer with learning rate of <span class="math notranslate nohighlight">\(10^{-6}\)</span>. During the experiment, it is observed that learning rate that is too high (around <span class="math notranslate nohighlight">\(10^{-3}\)</span>) wouldn’t work. The model needs to be trained with much lower learning rate.</p>
+<p>We train the model for approximately 200 epochs using the Adam optimizer with a learning rate of <span class="math notranslate nohighlight">\(10^{-6}\)</span>. During experimentation, we observed that if the learning rate is set too high (around <span class="math notranslate nohighlight">\(10^{-3}\)</span>), the model fails to train properly. Therefore, it is necessary to use a much lower learning rate.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vocab_size</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">hidden_dim</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">charrnn</span> <span class="o">=</span> <span class="n">CharRNN</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">charrnn</span> <span class="o">=</span> <span class="n">CharRNN</span><span class="p">(</span><span class="n">vocab_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
 <span class="n">train</span><span class="p">(</span><span class="n">charrnn</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -571,13 +574,18 @@ document.write(`
 </section>
 <section id="sample-generation">
 <h2><span class="section-number">2.2. </span>Sample generation<a class="headerlink" href="#sample-generation" title="Link to this heading">#</a></h2>
-<p>After training, we see that overall the model is able to generate handwritten digits. However, occasionally the strokes become discontinued at the boundaries. This is expected since in CharRNN, we flatten the images, causing the boundary points of the MNIST images to be directly connected. Therefore, sometimes the model fails to notice the boundary of the image and continue the stroke after the boundary.</p>
+<p>After training, we see that the model can generate handwritten digits overall. However, at times, the strokes become discontinuous at the boundaries. This issue arises because CharRNN flattens the images, which results in the boundary points of the MNIST images being directly connected. Therefore, the model sometimes fails to recognize the image boundaries and continues the stroke beyond them.</p>
 <div style="display: flex; justify-content: center;">
  <img                src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Autoregressive/figures/charrnn_order.png"  style="max-width: 25%; height: auto;">  
 </div>
 <p style="text-align: center; font-size: 14px;"> 
-    <strong> Figure 2 </strong>: Raster ordering. When flattened, the model treats pixel 5 directly connected to pixel 4, thereby causing discontinuities. 
-</p><div class="cell docutils container">
+    <strong> Figure 2 </strong>: Raster ordering: When flattened, the model treats pixel 5 as directly connected to pixel 4, which can cause discontinuities in the stroke.
+</p><div class="cell tag_hide-input docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_samples</span> <span class="o">=</span> <span class="mi">36</span>
 <span class="n">samples</span> <span class="o">=</span> <span class="n">charrnn</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
@@ -585,11 +593,12 @@ document.write(`
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
 <img alt="../_images/8d9130334a8ae2dae2a761972e9fcbd3f806691cdcdba41db39c724be8539ac7.png" src="../_images/8d9130334a8ae2dae2a761972e9fcbd3f806691cdcdba41db39c724be8539ac7.png" />
 </div>
 </div>
-<p>If we shift such image slightly, we see that we can recover the good digits.</p>
+<p>If we shift such image by a few pixels, we see that we can recover the good digits. This suggests that we might need to inject positional information in the model.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -615,7 +624,7 @@ document.write(`
 </section>
 <section id="charrnn-with-positional-encoding">
 <h2><span class="section-number">2.3. </span>CharRNN with positional encoding<a class="headerlink" href="#charrnn-with-positional-encoding" title="Link to this heading">#</a></h2>
-<p>One way of resolving this issue is by introducing postional information so that the model knows when it encounter the boundaries. Instead of using the sinusoids to encode position as in transformers, we simply feed the <span class="math notranslate nohighlight">\((x,y)\)</span> coordinate into the model.</p>
+<p>We now apply position encoding to the one-hot encoded images. Instead of using sinusoidal position encoding as in transformers, we concatenate the <span class="math notranslate nohighlight">\((x, y)\)</span> coordinates with the one-hot encoded vector. In other words, the input consists of a vector of the form <span class="math notranslate nohighlight">\([x, y, e_0, e_1]\)</span>, where <span class="math notranslate nohighlight">\(e_0\)</span> and <span class="math notranslate nohighlight">\(e_1\)</span> are indicator variables.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">charrnn_with_pos</span> <span class="o">=</span> <span class="n">CharRNN</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
@@ -627,7 +636,7 @@ document.write(`
 </section>
 <section id="sample-generation-with-positional-encoding">
 <h2><span class="section-number">2.4. </span>Sample generation with positional encoding<a class="headerlink" href="#sample-generation-with-positional-encoding" title="Link to this heading">#</a></h2>
-<p>After introducing the positional encoding, we see that the discontinuities disappears and the digits are centered to each frame.</p>
+<p>After injecting positional information, the discontinuities disappear, and the digits are now centered within each frame.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">num_samples</span> <span class="o">=</span> <span class="mi">36</span>

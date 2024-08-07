@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -412,9 +412,9 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#made-architecture">3.1. MADE architecture</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#made-implementation">3.2. MADE implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ensemble">3.3. Ensemble</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ordering-of-masks">3.4. Ordering of masks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#made-implementation">3.2. MADE Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#connectivity-agnostic-training">3.3. Connectivity-agnostic training</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ordering-of-input">3.4. Ordering of input</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#citation">3.5. Citation</a></li>
 </ul>
             </nav>
@@ -429,7 +429,7 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="made">
 <h1><span class="section-number">3. </span>MADE<a class="headerlink" href="#made" title="Link to this heading">#</a></h1>
-<p>One drawback of RNN-based architectures is their slow inference speed, as RNNs cannot be parallelized. An alternative method to impose the autoregressive property is by masking future tokens. An early attempt at this approach was made by Uria et al. in their Neural Autoregressive Distribution Estimation (NADE) model. They model the conditional distribution with a shared feedforward network, defined as</p>
+<p>To model the conditionals <span class="math notranslate nohighlight">\(p(x_i \mid \mathbf{x}_{&lt;i})\)</span>, we can also use models that handle a fixed number of input. An alternative approach is to mask future tokens before passing them into the network. An early attempt at this approach was made by Uria et al. with their Neural Autoregressive Distribution Estimation (NADE) model. They model the conditional distribution using a shared feedforward network, defined as</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
@@ -437,10 +437,10 @@ document.write(`
     \mathbf{h}_d &amp;= \text{sigmoid}(\mathbf{W}_{.,&lt;d}\;\mathbf{x}_{&lt;d}+\mathbf{c})\\
 \end{align*}
 \end{split}\]</div>
-<p>One problem with NADE is that to compute the conditional probability for all nodes, <span class="math notranslate nohighlight">\(D\)</span> feed-forward passes are needed. This makes training expensive. In Germain et al.’s Masked Autoencoder for Distribution Estimation (MADE), they extended this idea and propose a masking scheme that makes evaluating the probability <span class="math notranslate nohighlight">\(p(\mathbf{x})\)</span> takes 1 pass.</p>
+<p>One issue with NADE is that computing the conditional probability for all <span class="math notranslate nohighlight">\(D\)</span> variables requires <span class="math notranslate nohighlight">\(D\)</span> feedforward passes, making training costly. An improvement over NADE is proposed by Germain et al. in the Masked Autoencoder for Distribution Estimation (MADE). The authors extended the idea of modeling conditionals with a feedforward network and introduced a clever scheme that allows evaluating the probability <span class="math notranslate nohighlight">\(p(\mathbf{x})\)</span> with a single pass.</p>
 <section id="made-architecture">
 <h2><span class="section-number">3.1. </span>MADE architecture<a class="headerlink" href="#made-architecture" title="Link to this heading">#</a></h2>
-<p>Like NADE, MADE is a autoencoder feedforward network with a special masking scheme. In each hidden layer, neuron <span class="math notranslate nohighlight">\(k\)</span> is randomly assign a number <span class="math notranslate nohighlight">\(m(k)\)</span> uniformly chosen from <span class="math notranslate nohighlight">\(1\)</span> to <span class="math notranslate nohighlight">\(D-1\)</span>. The mask matrix <span class="math notranslate nohighlight">\(\mathbf{M}\)</span> is then defined as</p>
+<p>MADE is an autoencoder feedforward network with a special masking scheme. In each hidden layer, neuron <span class="math notranslate nohighlight">\(k\)</span> is randomly assign a number <span class="math notranslate nohighlight">\(m(k)\)</span> uniformly chosen from <span class="math notranslate nohighlight">\(1\)</span> to <span class="math notranslate nohighlight">\(D-1\)</span>. The mask matrix <span class="math notranslate nohighlight">\(\mathbf{M}\)</span> is then defined as</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{equation*}
@@ -451,28 +451,40 @@ document.write(`
 \end{cases}
 \end{equation*}
 \end{split}\]</div>
-<p>In other words, neuron from the previous layer can only connect to neurons in the next layer with greater or equal index value. This ensures that a node with value <span class="math notranslate nohighlight">\(m(k)\)</span> is connected by nodes with value less than or equal to <span class="math notranslate nohighlight">\(m(k)\)</span>. However, note that if we continue the same masking scheme in the last layer, then a node can depend on itself.</p>
+<p>In other words, neurons from the previous layer can only connect to neurons in the next layer with equal or greater index values. For example, a node with value <span class="math notranslate nohighlight">\(2\)</span> can only connect to nodes with value <span class="math notranslate nohighlight">\(1\)</span> or <span class="math notranslate nohighlight">\(2\)</span> in the previous layer. However, if the same masking scheme is applied to the last layer, a node could end up depending on itself. To address this, the authors modified the masking matrix of the output layer by changing the “less than or equal to” condition to “strictly less than.”</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{equation*}
 \mathbf{M}_{k, d}^O = 
 \begin{cases}
-1\hspace{5mm}\text{if}\;d &lt; m(k)\\
+1\hspace{5mm}\text{if}\;m(d)&lt;k\\
 0\hspace{5mm}\text{otherwise}
 \end{cases}
 \end{equation*}
 \end{split}\]</div>
-<p>From Figure 1, we can see that such masking scheme indeed ensures autoregressive property. For example, the node with value <span class="math notranslate nohighlight">\(3\)</span> is only connected to nodes with value <span class="math notranslate nohighlight">\(1\)</span> or <span class="math notranslate nohighlight">\(2\)</span>.</p>
+<p>Now, a neuron with value <span class="math notranslate nohighlight">\(2\)</span> can only depend on neurons with values less than <span class="math notranslate nohighlight">\(2\)</span> in the previous layer. This ensures that the autoregressive property is hold. An illustration of the masking scheme is provided in Figure 1.</p>
 <div style="display: flex; justify-content: center;">
  <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Autoregressive/figures/MADE.gif" style="max-width: 45%; height: auto;">  
 </div>
-<p style="text-align: center; font-size: 14px;"> 
+<p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
     <strong> Figure 1 </strong>: MADE masking scheme
 </p>
-<p>We can prove that autoregressive property holds rigorously, as demonstrated in the following theorem. Below we implement MADE from scratch.</p>
+<p>In the original paper, the authors proved that the autoregressive property is preserved with this masking scheme. In particular, note that the matrix product <span class="math notranslate nohighlight">\(\mathbf{M}^O \mathbf{M}^H\)</span> represents the connectivity from the input layer to the output layer. To demonstrate that the autoregressive property is preserved, it is sufficient to show that <span class="math notranslate nohighlight">\(\mathbf{M}^O \mathbf{M}^H\)</span> is lower triangular. This can be checked directly</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align*}
+(\mathbf{M}^O \mathbf{M}^H)_{a, b} &amp;= \sum_{k} \mathbf{M}^O_{a, k}\mathbf{M}^H_{k, b}\\
+&amp;= \sum_k \mathbb{1}_{m(k)\leq a}\mathbb{1}_{b\leq m(k)}\\
+&amp;= \sum_k \mathbb{1}_{b \leq m(k)\leq a}
+\end{align*}
+\end{split}\]</div>
+<p>If <span class="math notranslate nohighlight">\(a&lt; b\)</span>, then there are no <span class="math notranslate nohighlight">\(m(k)\)</span> that makes <span class="math notranslate nohighlight">\(b \leq m(k)\leq a\)</span>. Therefore, <span class="math notranslate nohighlight">\((\mathbf{M}^O \mathbf{M}^H)_{a, b}=0\)</span> for all <span class="math notranslate nohighlight">\(a&lt;b\)</span>. This proves that the connectivity matrix is indeed lower diagonal and thus autoregressive property holds. In the following section, we implement MADE from scratch and test it on the binarized MNIST data.</p>
 </section>
 <section id="made-implementation">
-<h2><span class="section-number">3.2. </span>MADE implementation<a class="headerlink" href="#made-implementation" title="Link to this heading">#</a></h2>
+<h2><span class="section-number">3.2. </span>MADE Implementation<a class="headerlink" href="#made-implementation" title="Link to this heading">#</a></h2>
+<p>For the implementation of MADE, we allow arbitrary permutation of the input and output sequence, as long as they are the same. Formally, let <span class="math notranslate nohighlight">\(\sigma\)</span> be any permutation function, MADE allows modeling</p>
+<div class="math notranslate nohighlight">
+\[p(\mathbf{x}) = \prod_{i=1}^D p(x_{\sigma(i)}|\mathbf{x}_{\sigma(&lt;i)})\]</div>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -522,13 +534,8 @@ document.write(`
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MADE</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
+<span class="k">class</span> <span class="nc">MADE</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Implementation of MADE</span>
 <span class="sd">    Assume that input dimension = output dimension</span>
@@ -559,7 +566,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">mask_idx</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_masks</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">sample_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_masks</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">sample_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_masks</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Predefine a list of masks that will be sampled during training</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -630,16 +637,16 @@ document.write(`
 </div>
 </div>
 </div>
+<p>We construct a MADE with 1 hidden layer with <span class="math notranslate nohighlight">\(500\)</span> units. The model is trained for <span class="math notranslate nohighlight">\(20\)</span> epochs using Adam optimizer with learning rate of <span class="math notranslate nohighlight">\(10^{-3}\)</span>. The generated image indeed resembles true handwritten digits, but it seems to be a bit noisy.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">made</span> <span class="o">=</span> <span class="n">MADE</span><span class="p">(</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">,</span> <span class="p">[</span><span class="mi">500</span><span class="p">],</span> <span class="n">n_masks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">made</span> <span class="o">=</span> <span class="n">MADE</span><span class="p">(</span><span class="n">max_len</span><span class="o">=</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">,</span> <span class="n">hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">500</span><span class="p">],</span> <span class="n">n_masks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">made</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
 <span class="n">train</span><span class="p">(</span><span class="n">made</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">n_epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>We construct a MADE with 1 hidden layer with <span class="math notranslate nohighlight">\(500\)</span> units. The model is trained for <span class="math notranslate nohighlight">\(20\)</span> epochs with learning rate of <span class="math notranslate nohighlight">\(10^{-3}\)</span>. The generated image indeed resembles true handwritten digits, but it seems to be a bit noisy.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -657,9 +664,11 @@ document.write(`
 </div>
 </div>
 </section>
-<section id="ensemble">
-<h2><span class="section-number">3.3. </span>Ensemble<a class="headerlink" href="#ensemble" title="Link to this heading">#</a></h2>
-<p>In the original paper, they also tested order agonistic training. We train 7 models using different choices of masks, using two-layered network with 500 hidden units. Each model is trained until its training loss converges. We resample the mask every <span class="math notranslate nohighlight">\(5\)</span> steps. The results are shown below.</p>
+<section id="connectivity-agnostic-training">
+<h2><span class="section-number">3.3. </span>Connectivity-agnostic training<a class="headerlink" href="#connectivity-agnostic-training" title="Link to this heading">#</a></h2>
+<p>In the paper, the authors also experimented with connectivity-agnostic training. In other words, during training, the model resamples the mask used by the hidden layers for each minibatch. However, sampling from an infinite set of masks could over-regularize the model. To mitigate this, the authors instead sample from a finite list of masks. During testing, the probabilities for each mask are averaged to produce a final result.</p>
+<p>We also tested this approach by training 7 models with different numbers of masks (<span class="math notranslate nohighlight">\(1\)</span>, <span class="math notranslate nohighlight">\(2\)</span>, <span class="math notranslate nohighlight">\(4\)</span>, <span class="math notranslate nohighlight">\(8\)</span>, <span class="math notranslate nohighlight">\(16\)</span>, <span class="math notranslate nohighlight">\(32\)</span>, and <span class="math notranslate nohighlight">\(64\)</span>). This was achieved by adjusting the <code class="docutils literal notranslate"><span class="pre">n_masks</span></code> parameter in the <code class="docutils literal notranslate"><span class="pre">sample_masks</span></code> method, which, during the initialization of a MADE model instance, samples a list of masks to be used during training. Each model used a single-layer network with 500 hidden units and was trained until its training loss converged. The mask was resampled every 5 steps. The testing losses for these models are shown below.</p>
+<p>We see that using approximately 4 masks yields the lowest test error. The shape of the test loss curve is consistent with the results reported in the paper.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -681,9 +690,17 @@ document.write(`
 </div>
 </div>
 </section>
-<section id="ordering-of-masks">
-<h2><span class="section-number">3.4. </span>Ordering of masks<a class="headerlink" href="#ordering-of-masks" title="Link to this heading">#</a></h2>
-<div class="cell tag_hide-input docutils container">
+<section id="ordering-of-input">
+<h2><span class="section-number">3.4. </span>Ordering of input<a class="headerlink" href="#ordering-of-input" title="Link to this heading">#</a></h2>
+<p>We also tested different orderings of the inputs and outputs. We found that orderings A, B, and D (raster order, transposed raster order, and scan order) perform well. Among these, the transposed raster order produces less noisy images compared to the others. In contrast, a random ordering fails to generate realistic images. This suggests that the design of the input ordering is also important in MADE.</p>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Autoregressive/figures/MADE_order.png" style="max-width: 80%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
+    <strong> Figure 2 </strong>: Different ordering of inputs
+</p><p style="font-size: 24px; font-weight: bold;">
+    Order A (Raster order)
+</p><div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
 <span class="collapsed">Show code cell source</span>
@@ -691,7 +708,7 @@ document.write(`
 </summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">784</span><span class="p">)</span>
-<span class="n">made</span> <span class="o">=</span> <span class="n">MADE</span><span class="p">(</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">,</span> <span class="p">[</span><span class="mi">500</span><span class="p">],</span> <span class="n">n_masks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
+<span class="n">made</span> <span class="o">=</span> <span class="n">MADE</span><span class="p">(</span><span class="n">max_len</span><span class="o">=</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">,</span> <span class="n">hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">500</span><span class="p">],</span> <span class="n">n_masks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">made</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
 <span class="n">train</span><span class="p">(</span><span class="n">made</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">n_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
 <span class="n">plot_samples</span><span class="p">(</span><span class="n">made</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -703,7 +720,9 @@ document.write(`
 <img alt="../_images/5d7e8dac99caff36f215a3a23eb00bf97c6e70ea49eff1227fcbace4a3365fa3.png" src="../_images/5d7e8dac99caff36f215a3a23eb00bf97c6e70ea49eff1227fcbace4a3365fa3.png" />
 </div>
 </div>
-<div class="cell tag_hide-input docutils container">
+<p style="font-size: 24px; font-weight: bold;">
+    Order B (Transposed raster order)
+</p><div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
 <span class="collapsed">Show code cell source</span>
@@ -711,7 +730,7 @@ document.write(`
 </summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">784</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">made</span> <span class="o">=</span> <span class="n">MADE</span><span class="p">(</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">,</span> <span class="p">[</span><span class="mi">500</span><span class="p">],</span> <span class="n">n_masks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
+<span class="n">made</span> <span class="o">=</span> <span class="n">MADE</span><span class="p">(</span><span class="n">max_len</span><span class="o">=</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">,</span> <span class="n">hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">500</span><span class="p">],</span> <span class="n">n_masks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">made</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
 <span class="n">train</span><span class="p">(</span><span class="n">made</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">n_epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
 <span class="n">plot_samples</span><span class="p">(</span><span class="n">made</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -723,7 +742,9 @@ document.write(`
 <img alt="../_images/fbe99a19b67a6566439164722764a29e30b05ce0db5aee947a41cdbde81b4cbb.png" src="../_images/fbe99a19b67a6566439164722764a29e30b05ce0db5aee947a41cdbde81b4cbb.png" />
 </div>
 </div>
-<div class="cell tag_hide-input docutils container">
+<p style="font-size: 24px; font-weight: bold;">
+    Order C (Random order)
+</p><div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
 <span class="collapsed">Show code cell source</span>
@@ -731,7 +752,7 @@ document.write(`
 </summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="mi">784</span><span class="p">)</span>
-<span class="n">made</span> <span class="o">=</span> <span class="n">MADE</span><span class="p">(</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">,</span> <span class="p">[</span><span class="mi">500</span><span class="p">],</span> <span class="n">n_masks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
+<span class="n">made</span> <span class="o">=</span> <span class="n">MADE</span><span class="p">(</span><span class="n">max_len</span><span class="o">=</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">,</span> <span class="n">hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">500</span><span class="p">],</span> <span class="n">n_masks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">made</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
 <span class="n">train</span><span class="p">(</span><span class="n">made</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">n_epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
 <span class="n">plot_samples</span><span class="p">(</span><span class="n">made</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -743,7 +764,9 @@ document.write(`
 <img alt="../_images/26b6e77f267c7f353d9c3e7995a420bd0c1bbeeeb92b87e3a0df67dcdb303fed.png" src="../_images/26b6e77f267c7f353d9c3e7995a420bd0c1bbeeeb92b87e3a0df67dcdb303fed.png" />
 </div>
 </div>
-<div class="cell tag_hide-input docutils container">
+<p style="font-size: 24px; font-weight: bold;">
+    Order D (Scan order)
+</p><div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
 <span class="collapsed">Show code cell source</span>
@@ -751,7 +774,7 @@ document.write(`
 </summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">row</span> <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">row</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">28</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">))])</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-<span class="n">made</span> <span class="o">=</span> <span class="n">MADE</span><span class="p">(</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">,</span> <span class="p">[</span><span class="mi">500</span><span class="p">],</span> <span class="n">n_masks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
+<span class="n">made</span> <span class="o">=</span> <span class="n">MADE</span><span class="p">(</span><span class="n">max_len</span><span class="o">=</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">,</span> <span class="n">hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">500</span><span class="p">],</span> <span class="n">n_masks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">made</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
 <span class="n">train</span><span class="p">(</span><span class="n">made</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">n_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
 <span class="n">plot_samples</span><span class="p">(</span><span class="n">made</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -837,9 +860,9 @@ document.write(`
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#made-architecture">3.1. MADE architecture</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#made-implementation">3.2. MADE implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ensemble">3.3. Ensemble</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ordering-of-masks">3.4. Ordering of masks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#made-implementation">3.2. MADE Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#connectivity-agnostic-training">3.3. Connectivity-agnostic training</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ordering-of-input">3.4. Ordering of input</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#citation">3.5. Citation</a></li>
 </ul>
   </nav></div>
