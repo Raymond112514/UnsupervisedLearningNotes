@@ -445,9 +445,7 @@ document.write(`
 </p><section id="pixelcnn-architechture">
 <h2><span class="section-number">4.1. </span>PixelCNN Architechture<a class="headerlink" href="#pixelcnn-architechture" title="Link to this heading">#</a></h2>
 <p>Masked convolutional filters are the fundamental building blocks of PixelCNN. In the paper, the author stacks these filters according to the residual block architecture. Each residual block is followed by batch normalization and a ReLU activation function. The final output layer consists of a single convolutional filter with an output channel dimension of <code class="docutils literal notranslate"><span class="pre">input_channel_dimension</span></code> <span class="math notranslate nohighlight">\(\times\)</span> <code class="docutils literal notranslate"><span class="pre">num_classes</span></code>. The resulting output is then reshaped to produce the logits for the image.</p>
-<div style="display: flex; justify-content: center;">
- <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Autoregressive/figures/pixelcnn_resblock.png" style="max-width: 40%; height: auto;">  
-</div>
+<a class="bg-primary mb-1 reference internal image-reference" href="../_images/pixelcnn_resblock.png"><img alt="fishy" class="bg-primary mb-1 align-center" src="../_images/pixelcnn_resblock.png" style="width: 500px;" /></a>
 <p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
     <strong> Figure 3 </strong>: Architecture of PixelCNN. The output shape of each block is shown below. We stack K residual blocks, each containing 3 masked convolutional filters with type B mask. The kernel size of the filters are 1, 7, and 1, respectively. The number of channel is also reduced by half in the middle filter.
 </p>
