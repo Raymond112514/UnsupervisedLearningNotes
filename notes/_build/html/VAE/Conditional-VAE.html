@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -411,7 +411,10 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bibliography">11.1. Bibliography</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conditional-vae-architecture">11.1. Conditional VAE Architecture</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conditional-vae-implementation">11.2. Conditional VAE Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist">11.3. MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bibliography">11.4. Bibliography</a></li>
 </ul>
             </nav>
         </div>
@@ -425,10 +428,22 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="conditional-vae">
 <h1><span class="section-number">11. </span>Conditional VAE<a class="headerlink" href="#conditional-vae" title="Link to this heading">#</a></h1>
-<p>So far, the VAE, when generating samples, can only generate random samples. What if we want to generate samples from a particular class? This can be done through conditioning on the labels of the image while training. In particular, let <span class="math notranslate nohighlight">\(\mathbf{y}\)</span> denote the label, the variational lower bound of the conditional distribution <span class="math notranslate nohighlight">\(p(\mathbf{x}|\mathbf{y})\)</span> becomes</p>
+<p>So far, the variational autoencoder generates samples from random classes. What if we want to generate images from a particular class? This can be done by conditioning on the class labels during training. Formally, let (\mathbf{y}) denote the class label of image <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>. We want to optimize <span class="math notranslate nohighlight">\(p(\mathbf{x}|\mathbf{y})\)</span>. The variational lower bound for the conditional distribution (p(\mathbf{x}|\mathbf{y})) becomes:</p>
 <div class="math notranslate nohighlight">
-\[\log p(\mathbf{x}|\mathbf{y} \geq \mathbb{E}_{\mathbf{z}\sim q_{\phi}(\mathbf{z}|\mathbf{x}, \mathbf{y})} [\log p_{\theta}(\mathbf{x}|\mathbf{y}, \mathbf{z})] - \mathcal{D}_{KL}(q_{\phi}(\mathbf{z}|\mathbf{x}, \mathbf{y})||p(\mathbf{z}|\mathbf{y} ))\]</div>
-<p>Therefore, both our encoder and decoder now must accept label as an input. We do so through embedding the label and concatenating or summing it with the image and latent vector.</p>
+\[\log p(\mathbf{x}|\mathbf{y}) \geq \mathbb{E}_{\mathbf{z}\sim q_{\phi}(\mathbf{z}|\mathbf{x}, \mathbf{y})} [\log p_{\theta}(\mathbf{x}|\mathbf{y}, \mathbf{z})] - \mathcal{D}_{KL}(q_{\phi}(\mathbf{z}|\mathbf{x}, \mathbf{y}) \| p(\mathbf{z}|\mathbf{y}))\]</div>
+<p>Thus, both the encoder and decoder must now incorporate the class label as input. This is done by embedding the label and concatenating it with both the image and the latent vector.</p>
+<section id="conditional-vae-architecture">
+<h2><span class="section-number">11.1. </span>Conditional VAE Architecture<a class="headerlink" href="#conditional-vae-architecture" title="Link to this heading">#</a></h2>
+<p>We implement and test a conditional VAE on the MNIST dataset, following the architecture shown in Figure 1.</p>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/VAE/figures/cond_VAE_architecture.png" style="max-width: 45%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
+    <strong> Figure 1 </strong>: Conditional VAE encoder and decoder architecture.
+</p>
+</section>
+<section id="conditional-vae-implementation">
+<h2><span class="section-number">11.2. </span>Conditional VAE Implementation<a class="headerlink" href="#conditional-vae-implementation" title="Link to this heading">#</a></h2>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -598,7 +613,10 @@ document.write(`
 </div>
 </div>
 </div>
-<p>We trained the conditional VAE for 5 epochs with a learning rate of <span class="math notranslate nohighlight">\(10^{-3}\)</span>. The generated samples, conditioned on class, are shown in the figure below. Note that the model successfully learns the conditional distribution of the data.</p>
+</section>
+<section id="mnist">
+<h2><span class="section-number">11.3. </span>MNIST<a class="headerlink" href="#mnist" title="Link to this heading">#</a></h2>
+<p>We trained a conditional VAE with latent dimension of <span class="math notranslate nohighlight">\(256\)</span>. The model is trained for 5 epochs using Adam optimizer with a learning rate of <span class="math notranslate nohighlight">\(10^{-3}\)</span>. The generated samples, conditioned on each class, are shown in the figure below. The model successfully learns the conditional distribution of the handwritten digits.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vae</span> <span class="o">=</span> <span class="n">VAE</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -624,8 +642,9 @@ document.write(`
 <img alt="../_images/2c76dd24871c82b533dd56d3347897a2827f801863aec7ac6242e38b546b5847.png" src="../_images/2c76dd24871c82b533dd56d3347897a2827f801863aec7ac6242e38b546b5847.png" />
 </div>
 </div>
+</section>
 <section id="bibliography">
-<h2><span class="section-number">11.1. </span>Bibliography<a class="headerlink" href="#bibliography" title="Link to this heading">#</a></h2>
+<h2><span class="section-number">11.4. </span>Bibliography<a class="headerlink" href="#bibliography" title="Link to this heading">#</a></h2>
 <p>[1] <a class="reference external" href="https://papers.nips.cc/paper_files/paper/2015/file/8d55a249e6baa5c06772297520da2051-Paper.pdf">https://papers.nips.cc/paper_files/paper/2015/file/8d55a249e6baa5c06772297520da2051-Paper.pdf</a></p>
 </section>
 </section>
@@ -694,7 +713,10 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bibliography">11.1. Bibliography</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conditional-vae-architecture">11.1. Conditional VAE Architecture</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conditional-vae-implementation">11.2. Conditional VAE Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist">11.3. MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bibliography">11.4. Bibliography</a></li>
 </ul>
   </nav></div>
 

@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -411,22 +411,22 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-architecture">7.1. RealNVP architecture</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#masking-scheme">7.1.1. Masking scheme</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-architecture">7.1. RealNVP Architecture</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#affine-coupling-layer">7.1.1. Affine coupling layer</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-block">7.1.2. RealNVP Block</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#multiscale-architecture">7.1.3. Multiscale architecture</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loss-function">7.1.4. Loss function</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">7.2. Implementation</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#coupling-layer-implementation">7.2.1. Coupling layer implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#coupling-layer-implementation">7.2.1. Coupling layer Implementation</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-implementation">7.2.2. RealNVP Implementation</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">7.2.3. RealNVP implementation</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">7.2.4. Loss function</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-mnist">7.3. On MNIST</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-cifar10">7.4. On CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist">7.3. MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cifar10">7.4. CIFAR10</a></li>
 </ul>
             </nav>
         </div>
@@ -440,7 +440,7 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="real-nvp">
 <h1><span class="section-number">7. </span>Real NVP<a class="headerlink" href="#real-nvp" title="Link to this heading">#</a></h1>
-<p>One challenge of flow-based models is to find a transformation <span class="math notranslate nohighlight">\(f\)</span> that is invertible, has a simple Jacobian determinant, and possesses sufficient expressive power. In 2014, Dinh et al. proposed a clever way of constructing such transformations using coupling layers. Their approach, known as NICE (Non-linear Independent Components Estimation), involves splitting the input data into two parts and applying an affine transformation to one part conditioned on the other. Formally, let <span class="math notranslate nohighlight">\(\mathbf{x}\in \mathbb{R}^D\)</span> denote the input sequence, the function <span class="math notranslate nohighlight">\(\mathbf{z}=f(\mathbf{x})\)</span> acts as follows</p>
+<p>In 2014, Dinh et al. proposed a clever way of constructing the normalizing flow in their NICE (Non-linear Independent Components Estimation) model. A key component of the model is the additive coupling layer, which involves splitting the input sequence <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> into two parts and applying an affine transformation <span class="math notranslate nohighlight">\(f\)</span> defined as follows</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{equation*}
 \begin{cases}
@@ -448,7 +448,7 @@ document.write(`
 \mathbf{z}_{D/2:D} = \mathbf{x}_{D/2:D} + m_{\theta}(\mathbf{x}_{1:D/2})\\
 \end{cases}
 \end{equation*}\end{split}\]</div>
-<p>Note that <span class="math notranslate nohighlight">\(f\)</span> is invertible, with inverse being</p>
+<p>The flow <span class="math notranslate nohighlight">\(f\)</span> is invertible, with inverse being</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{equation*}
 \begin{cases}
@@ -456,14 +456,20 @@ document.write(`
 \mathbf{x}_{D/2:D} = \mathbf{z}_{D/2:D} - m_{\theta}(\mathbf{z}_{1:D/2})\\
 \end{cases}
 \end{equation*}\end{split}\]</div>
-<p>Moreover, evaluating the inverse does not involve taking the inverse of <span class="math notranslate nohighlight">\(m_\theta\)</span>. This means that we can parameterize <span class="math notranslate nohighlight">\(m_{\theta}\)</span> however we want! (for example, with a neural network). The Jacobian of the map is also easy to compute</p>
+<p>Moreover, evaluating the inverse does not involve taking the inverse of <span class="math notranslate nohighlight">\(m_\theta\)</span>. This means that we can parameterize <span class="math notranslate nohighlight">\(m_{\theta}\)</span> however we want! The Jacobian of <span class="math notranslate nohighlight">\(f\)</span> is also easy to compute</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\frac{\partial \mathbf{z}}{\partial \mathbf{x}} = \begin{bmatrix}
 1 &amp; 0\\
 \frac{\partial m_{\theta}}{\partial \mathbf{z}} &amp; 1
 \end{bmatrix} \implies \bigg|\frac{\partial \mathbf{z}}{\partial \mathbf{x}}\bigg|=1\end{split}\]</div>
-<p>One downside of such a mapping is that it only modifies half of <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>. To modify all of <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>, we can consider stacking multiple layers of the mapping <span class="math notranslate nohighlight">\(f\)</span> with alternating partitions of <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> (Figure 1). This allows the entire input to be modified and enhances the overall expressiveness of the model. <br></p>
-<p>Two years later, Dinh et al. proposed RealNVP, which serves as a generalization of the NICE architecture. The flow function in RealNVP takes a similar form to that in NICE.</p>
+<p>One problem with <span class="math notranslate nohighlight">\(f\)</span> is that it only modifies half of <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>. To make use of the entire input sequence, the authors proposed stacking multiple coupling layers with alternating partitions of <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>. This allows the entire input to be updated and enhances the overall expressiveness of the model. <br></p>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Flow/figures/NICE_couple.png" style="max-width: 50%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
+    <strong> Figure 1 </strong>: Stacking two NICE coupling layers ensures all variables in the input sequence are updated.
+</p>
+<p>Two years later, Dinh et al. introduced the RealNVP architecture, which builds on the NICE model by incorporating scaling in the additive coupling layer. The flow function in RealNVP retains a similar structure to that in NICE.</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{equation*}
 \begin{cases}
@@ -479,33 +485,49 @@ document.write(`
 \mathbf{x}_{D/2:D} = (\mathbf{z}_{D/2:D} - t(\mathbf{z}_{1:D/2}))\odot \exp(-s(\mathbf{z}_{1:D/2}))\\
 \end{cases}
 \end{equation*}\end{split}\]</div>
-<p>As before, computing the inverse does not require taking the inverse of <span class="math notranslate nohighlight">\(s\)</span> or <span class="math notranslate nohighlight">\(t\)</span>, meaning we can parameterize <span class="math notranslate nohighlight">\(s\)</span> and <span class="math notranslate nohighlight">\(t\)</span> as deeply as we want. The Jacobian of the flow is given by</p>
+<p>As before, computing the inverse does not require taking the inverse of <span class="math notranslate nohighlight">\(s\)</span> or <span class="math notranslate nohighlight">\(t\)</span>, meaning we can parameterize <span class="math notranslate nohighlight">\(s\)</span> and <span class="math notranslate nohighlight">\(t\)</span> in any way we want. The Jacobian of the flow is given by</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\frac{\partial \mathbf{z}}{\partial \mathbf{x}} = \begin{bmatrix}
 1 &amp; 0\\
 \frac{\partial \mathbf{z}_{D/2:D}}{\partial \mathbf{x}_{1:D/2}} &amp; \exp(s(\mathbf{x}_{1:D/2}))
 \end{bmatrix} \implies \bigg|\frac{\partial \mathbf{z}}{\partial \mathbf{x}}\bigg|=\exp(s(\mathbf{x}_{1:D/2}))\end{split}\]</div>
-<p>This Jacobian can be computed during the forward pass! However, the flow proposed in RealNVP suffers from the same problem as the one in NICE—both only modify half of the input sequence. To overcome this, Dinh et al. proposed stacking these layers with different patterns. Below, we discuss the architecture of RealNVP.</p>
-<section id="realnvp-architecture">
-<h2><span class="section-number">7.1. </span>RealNVP architecture<a class="headerlink" href="#realnvp-architecture" title="Link to this heading">#</a></h2>
-<section id="masking-scheme">
-<h3><span class="section-number">7.1.1. </span>Masking scheme<a class="headerlink" href="#masking-scheme" title="Link to this heading">#</a></h3>
-<p>The triangular computational graph of RealNVP can be implemented using a binary mask. The mapping <span class="math notranslate nohighlight">\(f\)</span> can be concisely expressed as</p>
+<p>Which can be computed during the forward pass! However, the affine coupling layer suffers from the same problem: it only modifies half of the input sequence. Like before, the authors proposed stacking multiple layers with alternating patterns.</p>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Flow/figures/REALNVP_couple.png" style="max-width: 45%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
+    <strong> Figure 2 </strong>: Stacking two RealNVP coupling layers ensures all variables in the input sequence are updated.
+</p><section id="realnvp-architecture">
+<h2><span class="section-number">7.1. </span>RealNVP Architecture<a class="headerlink" href="#realnvp-architecture" title="Link to this heading">#</a></h2>
+<section id="affine-coupling-layer">
+<h3><span class="section-number">7.1.1. </span>Affine coupling layer<a class="headerlink" href="#affine-coupling-layer" title="Link to this heading">#</a></h3>
+<p>The affine coupling layer maps input sequence <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> to <span class="math notranslate nohighlight">\(\mathbf{z}\)</span> according to the equation above. The operation can be implemented using a binary mask <span class="math notranslate nohighlight">\(b\)</span>.</p>
 <div class="math notranslate nohighlight">
 \[\mathbf{z} = b\odot \mathbf{x} + (1-b) \odot \bigg(\mathbf{x} \odot \exp(s(b \odot \mathbf{x})) + t(b \odot \mathbf{x})\bigg)\]</div>
-<p>With inverse being</p>
+<p>And the inverse can be represented as</p>
 <div class="math notranslate nohighlight">
 \[\mathbf{x} = b\odot \mathbf{z} + (1-b) \odot \bigg((\mathbf{z} - t(b \odot \mathbf{z})) \odot \exp(-s(b \odot \mathbf{z}))\bigg)\]</div>
-<p>One advantage of using this notation is that we can apply any binary mask we like, rather than simply flattening and splitting the sequence in half.  In the paper, Dinh et al. applied two types of masks: checkerboard masks and channel masks (Figure 2). <br></p>
-<p>Each layer uses one of the masks and produces output based on equation <span class="math notranslate nohighlight">\((1)\)</span>. The functions <span class="math notranslate nohighlight">\(s\)</span> and <span class="math notranslate nohighlight">\(t\)</span> are parameterized following a ResNet architecture, with standard convolution replaced by weighted convolution. For the scale function <span class="math notranslate nohighlight">\(s\)</span>, a <span class="math notranslate nohighlight">\(\tanh\)</span> activation is applied at the end to constrain the value to <span class="math notranslate nohighlight">\([-1, 1]\)</span>. The constrained value is then multiplied by a learnable scale parameter.</p>
+<p>One advantage of this notation is that it allows us to use any binary mask we prefer, rather than just flattening and splitting the sequence in half. In their paper, Dinh et al. uses two types of masks: checkerboard masks and channel masks. Each affine coupling layer uses either type of mask.</p>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Flow/figures/masks.png" style="max-width: 45%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
+    <strong> Figure 3 </strong>: Each affine coupling layer contains either a checkerboard mask or a channel mask.
+</p>
+<p>The functions <span class="math notranslate nohighlight">\(s\)</span> and <span class="math notranslate nohighlight">\(t\)</span> are parameterized following a ResNet architecture, with standard convolution replaced by weighted convolution. For the scale function <span class="math notranslate nohighlight">\(s\)</span>, a <span class="math notranslate nohighlight">\(\tanh\)</span> activation is applied at the end to constrain the value to <span class="math notranslate nohighlight">\([-1, 1]\)</span>. The constrained value is then multiplied by a learnable scale parameter.</p>
 </section>
 <section id="realnvp-block">
 <h3><span class="section-number">7.1.2. </span>RealNVP Block<a class="headerlink" href="#realnvp-block" title="Link to this heading">#</a></h3>
-<p>A RealNVP block is composed of three alternating checkerboard masks, followed by a squeeze operation, and then three alternating channel masks. The squeeze operation reduces a tensor of shape <span class="math notranslate nohighlight">\([C, H, W]\)</span> to <span class="math notranslate nohighlight">\([4C, \frac{H}{2}, \frac{W}{2}]\)</span>. This trades spatial dimensions for the number of channels. In the final layer, the block is replaced by four alternating checkerboard masks.</p>
-</section>
+<p>A RealNVP block is composed of three layers of affine coupling layers with alternating checkerboard masks, followed by a squeeze operation, and then another three affine coupling layers with alternating channel masks. The squeeze operation reduces a tensor of shape <span class="math notranslate nohighlight">\([C, H, W]\)</span> to <span class="math notranslate nohighlight">\([4C, \frac{H}{2}, \frac{W}{2}]\)</span>. This trades spatial dimensions for the number of channels. In the final layer, the block is replaced by four alternating checkerboard masks.</p>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Flow/figures/squeeze.png" style="max-width: 50%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
+    <strong> Figure 4 </strong>: Illustration of the squeeze operation. The operation maps tensor of shape [1, 4, 4] to [4, 2, 2]. 
+</p></section>
 <section id="multiscale-architecture">
 <h3><span class="section-number">7.1.3. </span>Multiscale architecture<a class="headerlink" href="#multiscale-architecture" title="Link to this heading">#</a></h3>
-<p>To save computational and memory costs, Dinh et al. factored out half of the variables after each RealNVP block. The factored variable is flattened and concatenated with other factored variables. This operation is defined recursively as:</p>
+<p>To save computational and memory costs, the author proposed factoring out half of the variables after each RealNVP block. The factored variable is flattened and concatenated with other extracted variables. This operation is defined recursively as:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
@@ -515,11 +537,11 @@ document.write(`
     \mathbf{z} &amp;= (\mathbf{z}^{(1)}, \mathbf{z}^{(2)},..., \mathbf{z}^{(L)})
 \end{align*}
 \end{split}\]</div>
-<p>The final vector <span class="math notranslate nohighlight">\(\mathbf{z}\)</span> is then modeled as a multivariate Gaussian.</p>
+<p>The final vector <span class="math notranslate nohighlight">\(\mathbf{z}\)</span> is then modeled as a multivariate Gaussian. This allows intermediate levels of representation</p>
 </section>
 <section id="loss-function">
 <h3><span class="section-number">7.1.4. </span>Loss function<a class="headerlink" href="#loss-function" title="Link to this heading">#</a></h3>
-<p>To train the RealNVP, we need a loss function. Let <span class="math notranslate nohighlight">\(f_a, f_b\)</span> be two coupling layers, stacking them gives us the Jacobian:</p>
+<p>Let <span class="math notranslate nohighlight">\(f_a, f_b\)</span> be two coupling layers, stacking them gives us the Jacobian:</p>
 <div class="math notranslate nohighlight">
 \[\frac{\partial f_b\circ f_a}{\partial \mathbf{x}_a^T}(\mathbf{x}_a) = \frac{\partial f_a}{\partial \mathbf{x}_a^T}(\mathbf{x}_a) \frac{\partial f_b}{\partial \mathbf{x}_b^T}(\mathbf{x}_b=f_a(\mathbf{x}_a))\]</div>
 <p>Taking determinants on both sides gives us:</p>
@@ -531,21 +553,21 @@ document.write(`
 &amp;= \exp(s_a(\mathbf{x}_{1:d/2}) + s_b(\mathbf{x}_{1:d/2}))
 \end{align*}
 \end{split}\]</div>
-<p>This implies that the Jacobian of the stacked layers is essentially the exponential of the summed scale outputs. Therefore, the log-likelihood can be written as:</p>
+<p>This implies that the Jacobian of the stacked layers is essentially the exponential of the summed scale outputs. Assuming that the distribution <span class="math notranslate nohighlight">\(p_\mathbf{z}(z)\)</span> is multivariate Gaussian, the log-likelihood can be written as:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
 \log p_{\mathbf{x}}(x) &amp;= \log p_{\mathbf{z}}(z) + \log\bigg|\frac{\partial f}{\partial x}\bigg|\\
 &amp;= \log p_{\mathbf{z}}(z) + \log \exp\bigg(-\sum_i s_i(\mathbf{x}_{1:d})\bigg)\\
-&amp;= -\frac{1}{2}\log(2\pi) -\frac{(f(\mathbf{x}))^2}{2} + \sum_i s_i(\mathbf{x}_{1:d})\\
+&amp;= -\frac{1}{2}\log(2\pi) -\frac{(f(\mathbf{x}))^2}{2} + \sum_i s_i(\mathbf{x}_{1:d})\tag{*}\\
 \end{align*}
 \end{split}\]</div>
-<p>Each of these components can be computed efficiently during the forward pass.</p>
+<p>Where of these components can be computed efficiently during the forward pass.</p>
 </section>
 </section>
 <section id="implementation">
 <h2><span class="section-number">7.2. </span>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h2>
-<p>Below we implement a RealNVP and train the model on MNIST and CIFAR10 datasets. We focus on implementing the coupling layer and the RealNVP block.</p>
+<p>We now implement RealNVP from scratch and test its performance on the binarized MNIST and CIFAR10.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -578,15 +600,20 @@ document.write(`
 <span class="p">])</span>
 
 <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">CIFAR10</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">cidar_train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">cifar_train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </details>
 </div>
 <section id="coupling-layer-implementation">
-<h3><span class="section-number">7.2.1. </span>Coupling layer implementation<a class="headerlink" href="#coupling-layer-implementation" title="Link to this heading">#</a></h3>
-<p>We first implement the checkerboard and channel binary masks. The <code class="docutils literal notranslate"><span class="pre">requires_grad</span></code> is set to <code class="docutils literal notranslate"><span class="pre">False</span></code> as the binary mask is not learnable. In the implementation of the Coupling layer, we use a single ResNet to generate the scale <span class="math notranslate nohighlight">\(s \)</span> and translation <span class="math notranslate nohighlight">\(t\)</span> parameters. The <code class="docutils literal notranslate"><span class="pre">reverse</span></code> parameter, when set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, reverses the binary mask from <code class="docutils literal notranslate"><span class="pre">b</span></code> to <code class="docutils literal notranslate"><span class="pre">1-b</span></code>. This ensures that all pixels are processed during the forward pass.</p>
+<h3><span class="section-number">7.2.1. </span>Coupling layer Implementation<a class="headerlink" href="#coupling-layer-implementation" title="Link to this heading">#</a></h3>
+<p>We first implement the checkerboard and channel binary masks. A few notes:</p>
+<ol class="arabic simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">requires_grad</span></code> is set to <code class="docutils literal notranslate"><span class="pre">False</span></code> as the binary mask is not learnable.</p></li>
+<li><p>In the coupling layer, we use a single ResNet to generate the scale <span class="math notranslate nohighlight">\(s\)</span> and translation <span class="math notranslate nohighlight">\(t\)</span> parameters.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">reverse</span></code> parameter, when set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, reverses the binary mask from <code class="docutils literal notranslate"><span class="pre">b</span></code> to <code class="docutils literal notranslate"><span class="pre">1-b</span></code>.</p></li>
+</ol>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">getCheckboardMask</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">):</span>
@@ -638,7 +665,6 @@ document.write(`
 </section>
 <section id="realnvp-implementation">
 <h3><span class="section-number">7.2.2. </span>RealNVP Implementation<a class="headerlink" href="#realnvp-implementation" title="Link to this heading">#</a></h3>
-<p>Moving on the the implementation of the RealNVP block, which essentially follows the structure of Figure 2.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">RealNVPBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -763,7 +789,7 @@ document.write(`
 </section>
 <section id="id2">
 <h3><span class="section-number">7.2.4. </span>Loss function<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
-<p>The loss function follows equation <span class="math notranslate nohighlight">\((1)\)</span>. It is composed of the negative log-likelihood loss of the Multivariate Gaussian, and the Jacobian component.</p>
+<p>The loss function follows equation <span class="math notranslate nohighlight">\((*)\)</span>. It is composed of the negative log-likelihood loss of the Multivariate Gaussian, and the Jacobian component.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">loss_fn</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">s_det</span><span class="p">):</span>
@@ -776,10 +802,9 @@ document.write(`
 </div>
 </section>
 </section>
-<section id="on-mnist">
-<h2><span class="section-number">7.3. </span>On MNIST<a class="headerlink" href="#on-mnist" title="Link to this heading">#</a></h2>
-<p>After implementing RealNVP, we tested its performance on the MNIST dataset. For the scale and translation parameters, we used <span class="math notranslate nohighlight">\(8\)</span> layers of ResNet blocks with <span class="math notranslate nohighlight">\(64\)</span> hidden channels. Three RealNVP blocks were stacked on top of each other. We trained the model for <span class="math notranslate nohighlight">\(30\)</span> epochs with a learning rate of <span class="math notranslate nohighlight">\(10^{-3}\)</span> using the Adam optimizer. <br></p>
-<p>The resulting generated image is shown below. As we can see, the model is capable of generating realistic MNIST images, although some samples exhibit discontinuities. We stopped the training early, so additional training would likely improve the results.</p>
+<section id="mnist">
+<h2><span class="section-number">7.3. </span>MNIST<a class="headerlink" href="#mnist" title="Link to this heading">#</a></h2>
+<p>We train a RealNVP model on the MNIST dataset. We parameterize the scale and translation function using <span class="math notranslate nohighlight">\(8\)</span> layers of ResNet blocks with <span class="math notranslate nohighlight">\(64\)</span> hidden channels. Three RealNVP blocks are stacked on top of each other. We trained the model for <span class="math notranslate nohighlight">\(30\)</span> epochs using Adam optimizer with a learning rate of <span class="math notranslate nohighlight">\(10^{-3}\)</span> . The resulting generated image is shown below.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">realnvp</span> <span class="o">=</span> <span class="n">RealNVP</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">hidden_channels</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">n_layers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">n_scales</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -790,20 +815,26 @@ document.write(`
 </div>
 </div>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_samples</span><span class="p">(</span><span class="n">realnvp</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
 <img alt="../_images/5d0a2e8fd8682250226729b0352c886576c6503ea979107e2b2a37558f1aec40.png" src="../_images/5d0a2e8fd8682250226729b0352c886576c6503ea979107e2b2a37558f1aec40.png" />
 </div>
 </div>
 </section>
-<section id="on-cifar10">
-<h2><span class="section-number">7.4. </span>On CIFAR10<a class="headerlink" href="#on-cifar10" title="Link to this heading">#</a></h2>
-<p>We then applied the same architecture and hyperparameter settings to the CIFAR10 dataset. The model was able to generate diverse images that resemble those in the CIFAR10 dataset.</p>
+<section id="cifar10">
+<h2><span class="section-number">7.4. </span>CIFAR10<a class="headerlink" href="#cifar10" title="Link to this heading">#</a></h2>
+<p>We then trained another RealNVP on the CIFAR10 dataset following the same architecture and hyperparameter settings. The generated images are shown below.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">realnvp</span> <span class="o">=</span> <span class="n">RealNVP</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">hidden_channels</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">n_layers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">n_scales</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -814,12 +845,18 @@ document.write(`
 </div>
 </div>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_samples</span><span class="p">(</span><span class="n">realnvp</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
 <img alt="../_images/d623df9d8225c288056b5ed82bcd8f33fc9bbaae0be94d9927254459c1058f60.png" src="../_images/d623df9d8225c288056b5ed82bcd8f33fc9bbaae0be94d9927254459c1058f60.png" />
 </div>
@@ -891,22 +928,22 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-architecture">7.1. RealNVP architecture</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#masking-scheme">7.1.1. Masking scheme</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-architecture">7.1. RealNVP Architecture</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#affine-coupling-layer">7.1.1. Affine coupling layer</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-block">7.1.2. RealNVP Block</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#multiscale-architecture">7.1.3. Multiscale architecture</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loss-function">7.1.4. Loss function</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">7.2. Implementation</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#coupling-layer-implementation">7.2.1. Coupling layer implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#coupling-layer-implementation">7.2.1. Coupling layer Implementation</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#realnvp-implementation">7.2.2. RealNVP Implementation</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">7.2.3. RealNVP implementation</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">7.2.4. Loss function</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-mnist">7.3. On MNIST</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-cifar10">7.4. On CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist">7.3. MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cifar10">7.4. CIFAR10</a></li>
 </ul>
   </nav></div>
 

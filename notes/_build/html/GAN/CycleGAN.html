@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -416,6 +416,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#combined-loss">16.3. Combined loss</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cyclegan-implementation">16.4. CycleGAN implementation</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#generator-discriminator-implementation">16.4.1. Generator/Discriminator implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#training-loop-implementation">16.4.2. Training Loop Implementation</a></li>
 </ul>
 </li>
 </ul>
@@ -431,7 +432,7 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="cyclegan">
 <h1><span class="section-number">16. </span>CycleGAN<a class="headerlink" href="#cyclegan" title="Link to this heading">#</a></h1>
-<p>The CycleGAN architecture is proposed by Zhu et al. in 2020. In CycleGAN, instead of generating images, it aims to perform image translation tasks (for example, turning horses into zebras, grayscale images into colored images, summer scenes into winter scenes, etc.).<br></p>
+<p>The CycleGAN architecture is proposed by Zhu et al. in 2020. Instead of generating images, CycleGAN aims to perform image translation tasks (for example, turning horses into zebras, grayscale images into colored images, summer scenes into winter scenes, etc.).<br></p>
 <p>Formally, let <span class="math notranslate nohighlight">\(\mathcal{X}\)</span> and <span class="math notranslate nohighlight">\(\mathcal{Y}\)</span> denote two image domains. We want to learn a mapping <span class="math notranslate nohighlight">\(F: \mathcal{X} \rightarrow \mathcal{Y}\)</span>. This turns images in the source domain <span class="math notranslate nohighlight">\(\mathcal{X}\)</span> into images in the target domain <span class="math notranslate nohighlight">\(\mathcal{Y}\)</span>. However, there are many different ways to map <span class="math notranslate nohighlight">\(X \in \mathcal{X}\)</span> to <span class="math notranslate nohighlight">\(Y \in \mathcal{Y}\)</span>. To constrain the problem, we also learn the inverse mapping <span class="math notranslate nohighlight">\(G: \mathcal{Y} \rightarrow \mathcal{X}\)</span> and impose the cycle consistency constraint</p>
 <div class="math notranslate nohighlight">
 \[G(F(X))=X\hspace{10mm}F(G(Y))=Y\]</div>
@@ -445,7 +446,7 @@ document.write(`
 <p>The objective is the combined adversarial loss for the two GANs.</p>
 <div class="math notranslate nohighlight">
 \[\mathcal{L}(F, G, D_F, D_G) = \mathbb{E}_{x\sim p(x)}[\log (1-D_F(G(x)))]+\mathbb{E}_{y\sim p(y)}[\log D_F(y)]+ \mathbb{E}_{x\sim p(x)}[\log (1-D_G(F(x)))]+\mathbb{E}_{y\sim p(y)}[\log D_G(y)]\]</div>
-<p>Intuitively, we want the mapping <span class="math notranslate nohighlight">\(F\)</span> to be able to fool the discriminator <span class="math notranslate nohighlight">\(D_G\)</span>, so that it maps <span class="math notranslate nohighlight">\(X\)</span> to a realistic image <span class="math notranslate nohighlight">\(Y\)</span>. At the same time, we also want discriminator <span class="math notranslate nohighlight">\(D_G\)</span> to be a challenging opponent! The same reasoning applies to the other side.</p>
+<p>Intuitively, we want the mapping <span class="math notranslate nohighlight">\(F\)</span> to be able to fool the discriminator <span class="math notranslate nohighlight">\(D_G\)</span>, so that it maps <span class="math notranslate nohighlight">\(X\)</span> to a realistic image <span class="math notranslate nohighlight">\(Y\)</span>. At the same time, we want the discriminator <span class="math notranslate nohighlight">\(D_G\)</span> to be a challenging opponent. The same reasoning applies to the other side.</p>
 <section id="cycle-consistency-loss">
 <h2><span class="section-number">16.1. </span>Cycle consistency loss<a class="headerlink" href="#cycle-consistency-loss" title="Link to this heading">#</a></h2>
 <p>As mentioned before, to constrain the problem, we impose the cycle consistency contraint, which restricts that</p>
@@ -575,6 +576,9 @@ document.write(`
 </div>
 </div>
 </div>
+</section>
+<section id="training-loop-implementation">
+<h3><span class="section-number">16.4.2. </span>Training Loop Implementation<a class="headerlink" href="#training-loop-implementation" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_epoch</span><span class="p">(</span><span class="n">model_g</span><span class="p">,</span> <span class="n">model_c</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">,</span> <span class="n">optimizer_disc</span><span class="p">,</span> <span class="n">optimizer_gen</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">lambda_cycle</span><span class="p">,</span> <span class="n">lambda_identity</span><span class="p">,</span> <span class="n">sample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">):</span>
@@ -628,7 +632,7 @@ document.write(`
 </div>
 </div>
 </div>
-<p>We train the model for <span class="math notranslate nohighlight">\(10\)</span> epochs.</p>
+<p>We created two GANS, each with <span class="math notranslate nohighlight">\(1\)</span> layers of ResNet block. The cycle consistency parameter <span class="math notranslate nohighlight">\(\lambda_{cycle}\)</span> and the identity parameter <span class="math notranslate nohighlight">\(\lambda_{identity}\)</span> is set to <span class="math notranslate nohighlight">\(10\)</span>. We train the model for <span class="math notranslate nohighlight">\(20\)</span> epochs using Adam optimizer with learning rate of <span class="math notranslate nohighlight">\(10^{-3}\)</span> and beta <span class="math notranslate nohighlight">\((0.5, 0.999)\)</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_g</span> <span class="o">=</span> <span class="n">GAN</span><span class="p">(</span><span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -644,6 +648,7 @@ document.write(`
 </div>
 </div>
 </div>
+<p>Below, we plot the results of converting a grayscale image to a colored image, and then back to grayscale. In the subsequent plot, we show the reverse process: converting a colored image to grayscale and then back to color. Note that the model successfully handles image conversions between different domains.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -749,6 +754,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#combined-loss">16.3. Combined loss</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cyclegan-implementation">16.4. CycleGAN implementation</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#generator-discriminator-implementation">16.4.1. Generator/Discriminator implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#training-loop-implementation">16.4.2. Training Loop Implementation</a></li>
 </ul>
 </li>
 </ul>

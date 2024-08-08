@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -411,9 +411,11 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolution-vae-on-mnist">10.1. Convolution VAE on MNIST</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolution-vae-on-cifar10">10.2. Convolution VAE on CIFAR10</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bibliography">10.3. Bibliography</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolutional-vae-architecture">10.1. Convolutional VAE Architecture</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolutional-vae-implementation">10.2. Convolutional VAE Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist">10.3. MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolution-vae-on-cifar10">10.4. Convolution VAE on CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bibliography">10.5. Bibliography</a></li>
 </ul>
             </nav>
         </div>
@@ -427,7 +429,7 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="convolutional-vae">
 <h1><span class="section-number">10. </span>Convolutional VAE<a class="headerlink" href="#convolutional-vae" title="Link to this heading">#</a></h1>
-<p>A convolutional variational autoencoder uses convolutional and deconvolutional layers to parameterize its encoders and decoders. In this section, we implement a convolutional VAE to model the MNIST and CIFAR10 dataset. We model</p>
+<p>In a convolutional VAE, both the encoder and decoder are parameterized by convolutional and deconvolutional neural networks. The encoder <span class="math notranslate nohighlight">\(q\)</span> processes an image and produces a mean vector <span class="math notranslate nohighlight">\(\mathbf{\mu}_{\phi}\)</span> and a variance vector  <span class="math notranslate nohighlight">\(\mathbf{\sigma}_{\phi}\)</span>. The decoder <span class="math notranslate nohighlight">\(p\)</span> takes a latent vector as input and generates a mean vector <span class="math notranslate nohighlight">\(\mathbf{\mu}_{\theta}\)</span> in the image space, meaning it has the same dimensions as the original image. For the decoder, we fix the variance as an identity matrix.</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
@@ -436,7 +438,25 @@ document.write(`
     p(\mathbf{z}) &amp;= \mathcal{N}(\mathbf{z}|\mathbf{0}, \mathbf{I})\\
 \end{align*}
 \end{split}\]</div>
-<p>Note that for the decoder, we fix the covariance matrix as the identity. We follow the architecture described in Figure 1. As a preprocessing step, we scaled the pixels in both dataset to the range of <span class="math notranslate nohighlight">\([-1, 1]\)</span>.</p>
+<section id="convolutional-vae-architecture">
+<h2><span class="section-number">10.1. </span>Convolutional VAE Architecture<a class="headerlink" href="#convolutional-vae-architecture" title="Link to this heading">#</a></h2>
+<p>We implement and test a convolutional VAE on both the MNIST and CIFAR-10 datasets, following the architecture shown in Figure 1. During preprocessing, we normalize the images to the range <span class="math notranslate nohighlight">\([-1, 1]\)</span>.</p>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/VAE/figures/conv_VAE_architecture.png" style="max-width: 45%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
+    <strong> Figure 1 </strong>: Convolutional VAE encoder and decoder architecture.
+</p>
+<p>For the loss function, we use mean square error loss directly in place of the original reconstruction loss. This is because <span class="math notranslate nohighlight">\(p_{\theta}(\mathbf{x}|\mathbf{z}) = \mathcal{N}(\mathbf{x}|\mathbf{\mu}_{\theta}(\mathbf{z}), \mathbf{I})\)</span>, and therefore</p>
+<div class="math notranslate nohighlight">
+\[\log p_{\theta}(\mathbf{x}|\mathbf{z})\propto -||x-\mathbf{\mu}_{\theta}(\mathbf{z})||_2^2\]</div>
+<p>The prior matching loss remains the same, and we use the formula for KL-divergence between two multivariate Gaussian directly:</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{D}_{KL}(\mathcal{N}(\mu_1, \Sigma_1)||\mathcal{N}(\mu_2, \Sigma_2)) = \frac{1}{2}\bigg[\log \frac{|\Sigma_2|}{|\Sigma_1|}-d+(\mu_1-\mu_2)^T\Sigma_2^{-1}(\mu_1-\mu_2)+\text{Tr}(\Sigma_2^{-1}\Sigma_1)\bigg]\]</div>
+<p>See [1] for a complete derivation.</p>
+</section>
+<section id="convolutional-vae-implementation">
+<h2><span class="section-number">10.2. </span>Convolutional VAE Implementation<a class="headerlink" href="#convolutional-vae-implementation" title="Link to this heading">#</a></h2>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -593,13 +613,6 @@ document.write(`
 </div>
 </div>
 </div>
-<p>For the loss function, we use mean square error loss directly in place of the original reconstruction loss. This is because <span class="math notranslate nohighlight">\(p_{\theta}(\mathbf{x}|\mathbf{z}) = \mathcal{N}(\mathbf{x}|\mathbf{\mu}_{\theta}(\mathbf{z}), \mathbf{I})\)</span>, and therefore</p>
-<div class="math notranslate nohighlight">
-\[\log p_{\theta}(\mathbf{x}|\mathbf{z})\propto -||x-\mathbf{\mu}_{\theta}(\mathbf{z})||_2^2\]</div>
-<p>The prior matching loss remains the same, and we use the formula for KL-divergence between two multivariate Gaussian directly:</p>
-<div class="math notranslate nohighlight">
-\[\mathcal{D}_{KL}(\mathcal{N}(\mu_1, \Sigma_1)||\mathcal{N}(\mu_2, \Sigma_2)) = \frac{1}{2}\bigg[\log \frac{|\Sigma_2|}{|\Sigma_1|}-d+(\mu_1-\mu_2)^T\Sigma_2^{-1}(\mu_1-\mu_2)+\text{Tr}(\Sigma_2^{-1}\Sigma_1)\bigg]\]</div>
-<p>See [1] for a complete derivation.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">loss_fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x_recon</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">log_std</span><span class="p">):</span>
@@ -617,9 +630,10 @@ document.write(`
 </div>
 </div>
 </div>
-<section id="convolution-vae-on-mnist">
-<h2><span class="section-number">10.1. </span>Convolution VAE on MNIST<a class="headerlink" href="#convolution-vae-on-mnist" title="Link to this heading">#</a></h2>
-<p>We first train a VAE on the MNIST dataset. Note that the model is capable of generating instances that closely resemble handwritten digits.</p>
+</section>
+<section id="mnist">
+<h2><span class="section-number">10.3. </span>MNIST<a class="headerlink" href="#mnist" title="Link to this heading">#</a></h2>
+<p>We first train a convolutional VAE on the MNIST dataset with a latent dimension of <span class="math notranslate nohighlight">\(256\)</span>. The generated samples are shown below.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vae</span> <span class="o">=</span> <span class="n">VAE</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -645,7 +659,7 @@ document.write(`
 <img alt="../_images/6e3a9605f2d28b1246ca3def2ab3ea45391cf19b225598317db18b77cf0c325b.png" src="../_images/6e3a9605f2d28b1246ca3def2ab3ea45391cf19b225598317db18b77cf0c325b.png" />
 </div>
 </div>
-<p>The model also performs well in reconstruction. In the figure below, each pair consists of the true image in the left column and the reconstructed image in the right column. This indicates that our model has learned a latent representation for MNIST.</p>
+<p>The model also performs well in terms of reconstruction. In the figure below, each pair shows the true image in the left column and the reconstructed image in the right column. This demonstrates that our model has effectively learned a latent representation for MNIST.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -664,8 +678,8 @@ document.write(`
 </div>
 </section>
 <section id="convolution-vae-on-cifar10">
-<h2><span class="section-number">10.2. </span>Convolution VAE on CIFAR10<a class="headerlink" href="#convolution-vae-on-cifar10" title="Link to this heading">#</a></h2>
-<p>We now train a VAE on the CIFAR-10 dataset. Note that the generated samples appear blurry, a phenomenon observed in [2] and [3]. One reason for this is the use of the <span class="math notranslate nohighlight">\(L_2\)</span> norm in the reconstruction loss. The <span class="math notranslate nohighlight">\(L_2\)</span> norm is minimized when the possible outputs are averaged, leading to blurry results.</p>
+<h2><span class="section-number">10.4. </span>Convolution VAE on CIFAR10<a class="headerlink" href="#convolution-vae-on-cifar10" title="Link to this heading">#</a></h2>
+<p>We now train a VAE on the CIFAR-10 dataset, following the same architecture as before. Note that the generated samples appear blurry, a phenomenon observed in [2] and [3]. One reason for this is the use of the <span class="math notranslate nohighlight">\(L_2\)</span> norm in the reconstruction loss. The <span class="math notranslate nohighlight">\(L_2\)</span> norm is minimized when the possible outputs are averaged, leading to blurry results.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vae</span> <span class="o">=</span> <span class="n">VAE</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -704,7 +718,7 @@ document.write(`
 </div>
 </section>
 <section id="bibliography">
-<h2><span class="section-number">10.3. </span>Bibliography<a class="headerlink" href="#bibliography" title="Link to this heading">#</a></h2>
+<h2><span class="section-number">10.5. </span>Bibliography<a class="headerlink" href="#bibliography" title="Link to this heading">#</a></h2>
 <p>[1] <a class="reference external" href="https://mr-easy.github.io/2020-04-16-kl-divergence-between-2-gaussian-distributions/">https://mr-easy.github.io/2020-04-16-kl-divergence-between-2-gaussian-distributions/</a> <br>
 [2] <a class="reference external" href="https://arxiv.org/pdf/1604.07379">https://arxiv.org/pdf/1604.07379</a> <br>
 [3] <a class="reference external" href="https://arxiv.org/pdf/1611.07004">https://arxiv.org/pdf/1611.07004</a></p>
@@ -775,9 +789,11 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolution-vae-on-mnist">10.1. Convolution VAE on MNIST</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolution-vae-on-cifar10">10.2. Convolution VAE on CIFAR10</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bibliography">10.3. Bibliography</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolutional-vae-architecture">10.1. Convolutional VAE Architecture</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolutional-vae-implementation">10.2. Convolutional VAE Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist">10.3. MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convolution-vae-on-cifar10">10.4. Convolution VAE on CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bibliography">10.5. Bibliography</a></li>
 </ul>
   </nav></div>
 

@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -409,14 +409,16 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vqvae-implementation">12.1. VQVAE Implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-of-encoder-and-decoder">12.2. Implementation of encoder and decoder</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implement-vqvae">12.3. Implement VQVAE</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-vqvae">12.4. Training VQVAE</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#train-on-cifar10">12.5. Train on CIFAR10</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pixelcnn-implementation">12.6. PixelCNN implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#train-the-pixelcnn-for-generation">12.7. Train the PixelCNN for generation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#train-prior-on-cifar10">12.8. Train prior on Cifar10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vqvae-implementation">12.1. VQVAE Implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#encoder-decoder-implementation">12.1.1. Encoder/Decoder Implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#vector-quantizer-implementation">12.1.2. Vector Quantizer Implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">12.1.3. VQVAE Implementation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist">12.2. MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cifar10">12.3. CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist-generation-with-pixelcnn-prior">12.4. MNIST Generation with PixelCNN Prior</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cifar10-generation-with-pixelcnn-prior">12.5. CIFAR10 Generation with PixelCNN Prior</a></li>
 </ul>
             </nav>
         </div>
@@ -430,9 +432,14 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="vqvae">
 <h1><span class="section-number">12. </span>VQVAE<a class="headerlink" href="#vqvae" title="Link to this heading">#</a></h1>
-<p>Typically, the latent variable in a Variational Autoencoder (VAE) is modeled as a continuous distribution. However, as pointed out by Oord in the paper “Neural Discrete Representation Learning”, there are scenarios where a discrete representation might be more suitable. For example, human natural language is inherently a discrete modality. Motivated by this, Oord proposed the vector quantized variational autoencoder (VQVAE), which learns a discrete latent space representation. The overall architecture of VQVAE is similar to a typical VAE. It has an encoder and a decoder. The only difference is that VQVAE includes quantizer after the encoder. <br></p>
-<p>The quantizer in VQ-VAE stores a codebook that contains a list of embedding vectors. It processes the encoded information by replacing each encoded vector with its nearest neighbor from the codebook. This quantization step effectively maps the continuous latent space into a discrete space. The decoder then learns to reconstruct the input data from these discrete embeddings.<br></p>
-<p>After training the VQVAE, we can then use it for sampling. We can train a prior on the codebook and then use the decoder to decode the generated image.</p>
+<p>Typically, the latent variable in a Variational Autoencoder (VAE) is modeled as a continuous distribution. However, in many practical scenarios, discrete representations offer a more intuitive approach to modeling complex data. Many types of data—such as human language, images, audio, and more—that we encounter in the real world favor a discrete representation. In the paper, “Neural Discrete Representation Learning”, Oord proposed the vector quantized variational autoencoder (VQVAE), which learns a discrete latent space representation. The overall architecture of VQVAE is similar to a typical VAE. It has an encoder and a decoder. The only difference is that VQVAE includes quantizer after the encoder. <br></p>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/VAE/figures/vqvae.png" style="max-width: 65%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
+    <strong> Figure 1 </strong>: Architecture of VQVAE (source: [1])
+</p>
+<p>The quantizer in VQ-VAE stores a codebook that contains a list of embedding vectors. It processes the encoded information by replacing each encoded vector with its nearest neighbor from the codebook. This quantization step effectively maps the continuous latent space into a discrete space. The decoder then learns to reconstruct the input data from these discrete embeddings. After training the VQVAE, we can then use it for sampling by training a prior on the codebook and then use the decoder to decode the generated latent representation.</p>
 <section id="vqvae-implementation">
 <h2><span class="section-number">12.1. </span>VQVAE Implementation<a class="headerlink" href="#vqvae-implementation" title="Link to this heading">#</a></h2>
 <div class="cell tag_hide-input docutils container">
@@ -479,9 +486,8 @@ document.write(`
 </div>
 </details>
 </div>
-</section>
-<section id="implementation-of-encoder-and-decoder">
-<h2><span class="section-number">12.2. </span>Implementation of encoder and decoder<a class="headerlink" href="#implementation-of-encoder-and-decoder" title="Link to this heading">#</a></h2>
+<section id="encoder-decoder-implementation">
+<h3><span class="section-number">12.1.1. </span>Encoder/Decoder Implementation<a class="headerlink" href="#encoder-decoder-implementation" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Encoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -529,6 +535,9 @@ document.write(`
 </div>
 </div>
 </div>
+</section>
+<section id="vector-quantizer-implementation">
+<h3><span class="section-number">12.1.2. </span>Vector Quantizer Implementation<a class="headerlink" href="#vector-quantizer-implementation" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">VectorQuantizer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -556,8 +565,8 @@ document.write(`
 </div>
 </div>
 </section>
-<section id="implement-vqvae">
-<h2><span class="section-number">12.3. </span>Implement VQVAE<a class="headerlink" href="#implement-vqvae" title="Link to this heading">#</a></h2>
+<section id="id1">
+<h3><span class="section-number">12.1.3. </span>VQVAE Implementation<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">VQVAE</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -579,8 +588,9 @@ document.write(`
 </div>
 </div>
 </section>
-<section id="training-vqvae">
-<h2><span class="section-number">12.4. </span>Training VQVAE<a class="headerlink" href="#training-vqvae" title="Link to this heading">#</a></h2>
+</section>
+<section id="mnist">
+<h2><span class="section-number">12.2. </span>MNIST<a class="headerlink" href="#mnist" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">VQVAE</span><span class="p">(</span><span class="n">in_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">embed_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">n_embedding</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -607,8 +617,8 @@ document.write(`
 </div>
 </div>
 </section>
-<section id="train-on-cifar10">
-<h2><span class="section-number">12.5. </span>Train on CIFAR10<a class="headerlink" href="#train-on-cifar10" title="Link to this heading">#</a></h2>
+<section id="cifar10">
+<h2><span class="section-number">12.3. </span>CIFAR10<a class="headerlink" href="#cifar10" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">VQVAE</span><span class="p">(</span><span class="n">in_dim</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">embed_dim</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">n_embedding</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -635,11 +645,8 @@ document.write(`
 </div>
 </div>
 </section>
-<section id="pixelcnn-implementation">
-<h2><span class="section-number">12.6. </span>PixelCNN implementation<a class="headerlink" href="#pixelcnn-implementation" title="Link to this heading">#</a></h2>
-</section>
-<section id="train-the-pixelcnn-for-generation">
-<h2><span class="section-number">12.7. </span>Train the PixelCNN for generation<a class="headerlink" href="#train-the-pixelcnn-for-generation" title="Link to this heading">#</a></h2>
+<section id="mnist-generation-with-pixelcnn-prior">
+<h2><span class="section-number">12.4. </span>MNIST Generation with PixelCNN Prior<a class="headerlink" href="#mnist-generation-with-pixelcnn-prior" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vqvae</span> <span class="o">=</span> <span class="n">VQVAE</span><span class="p">(</span><span class="n">in_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">embed_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">n_embedding</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -668,8 +675,8 @@ document.write(`
 </div>
 </div>
 </section>
-<section id="train-prior-on-cifar10">
-<h2><span class="section-number">12.8. </span>Train prior on Cifar10<a class="headerlink" href="#train-prior-on-cifar10" title="Link to this heading">#</a></h2>
+<section id="cifar10-generation-with-pixelcnn-prior">
+<h2><span class="section-number">12.5. </span>CIFAR10 Generation with PixelCNN Prior<a class="headerlink" href="#cifar10-generation-with-pixelcnn-prior" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vqvae</span> <span class="o">=</span> <span class="n">VQVAE</span><span class="p">(</span><span class="n">in_dim</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">embed_dim</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">n_embedding</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -764,14 +771,16 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vqvae-implementation">12.1. VQVAE Implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-of-encoder-and-decoder">12.2. Implementation of encoder and decoder</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implement-vqvae">12.3. Implement VQVAE</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-vqvae">12.4. Training VQVAE</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#train-on-cifar10">12.5. Train on CIFAR10</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pixelcnn-implementation">12.6. PixelCNN implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#train-the-pixelcnn-for-generation">12.7. Train the PixelCNN for generation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#train-prior-on-cifar10">12.8. Train prior on Cifar10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vqvae-implementation">12.1. VQVAE Implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#encoder-decoder-implementation">12.1.1. Encoder/Decoder Implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#vector-quantizer-implementation">12.1.2. Vector Quantizer Implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">12.1.3. VQVAE Implementation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist">12.2. MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cifar10">12.3. CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist-generation-with-pixelcnn-prior">12.4. MNIST Generation with PixelCNN Prior</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cifar10-generation-with-pixelcnn-prior">12.5. CIFAR10 Generation with PixelCNN Prior</a></li>
 </ul>
   </nav></div>
 

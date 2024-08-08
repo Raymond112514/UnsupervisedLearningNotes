@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -411,20 +411,20 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#architecture">8.1. Architecture</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#glow-architecture">8.1. GLOW Architecture</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#activation-normalization">8.1.1. Activation normalization</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#invertible-convolution">8.1.2. Invertible convolution</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#affine-coupling-layer">8.1.3. Affine coupling layer</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">8.2. Implementation</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-three-components">8.2.1. The three components</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#glow-coupling-layer">8.2.2. Glow coupling layer</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">8.2.3. GLOW</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-three-components-implementation">8.2.1. The Three Components Implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#glow-block-implementation">8.2.2. GLOW Block implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#glow-implementation">8.2.3. GLOW Implementation</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-mnist">8.3. On MNIST</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-cifar10">8.4. On CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist">8.3. MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cifar10">8.4. CIFAR10</a></li>
 </ul>
             </nav>
         </div>
@@ -438,22 +438,22 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="glow">
 <h1><span class="section-number">8. </span>GLOW<a class="headerlink" href="#glow" title="Link to this heading">#</a></h1>
-<p>The Glow (Generative Flow with Invertible 1×1 Convolutions) model, proposed by Kingma et al. in 2018, builds upon previous work such as NICE and RealNVP. Unlike NICE and RealNVP, which use checkerboard and channel masks to apply permutations in each coupling layer, Glow introduces invertible 1×1 convolutions as a mechanism for permutation. At a high level, the Glow model is composed of stacks of coupling layers, each containing three major components:</p>
+<p>The GLOW (Generative Flow with Invertible 1×1 Convolutions) model, proposed by Kingma et al. in 2018, builds upon previous work such as NICE and RealNVP. Unlike RealNVP, which uses fixed checkerboard and channel masks to permute the input sequence, GLOW propose using invertible 1×1 convolutions as a learnable permutation. At a high level, the model is composed of stacks of GLOW blocks, each containing three major components:</p>
 <ol class="arabic simple">
 <li><p>Activation normalization layer</p></li>
 <li><p>1X1 invertible convolution layer</p></li>
 <li><p>Affine coupling layer</p></li>
 </ol>
-<p>In addition, Glow employs a multiscale architecture, similar to RealNVP, by progressively reducing the dimensionality of the data. After each Glow layer, the model factors out half of the variables, which helps to capture hierarchical features and improve the modeling capacity.</p>
-<section id="architecture">
-<h2><span class="section-number">8.1. </span>Architecture<a class="headerlink" href="#architecture" title="Link to this heading">#</a></h2>
+<p>GLOW also follows the multiscale architecture as in RealNVP. After each GLOW block, half of the variables are factors out, which helps to capture hierarchical features.</p>
+<section id="glow-architecture">
+<h2><span class="section-number">8.1. </span>GLOW Architecture<a class="headerlink" href="#glow-architecture" title="Link to this heading">#</a></h2>
 <section id="activation-normalization">
 <h3><span class="section-number">8.1.1. </span>Activation normalization<a class="headerlink" href="#activation-normalization" title="Link to this heading">#</a></h3>
 <p>It has been reported that the variance of activation noises induced by batch normalization is inversely proportional to the batch size. Since we often work with large images, we frequently use smaller batch sizes, sometimes as small as one. This motivated Kingma et al. to replace batch normalization with activation normalization.</p>
 </section>
 <section id="invertible-convolution">
 <h3><span class="section-number">8.1.2. </span>Invertible convolution<a class="headerlink" href="#invertible-convolution" title="Link to this heading">#</a></h3>
-<p>In RealNVP, Dinh et al. use a binary mask that is equivalent to the permutation of different channels. In Glow, such fixed permutation is replaced with 1x1 learned invertible convolutions. The convolution weight is initialized as a rotation matrix, and the log-determinant is given by</p>
+<p>In GLOW, the binary mask is replaced with 1x1 learnable invertible convolutions. The convolutional filter weight is initialized as a rotation matrix, and the log-determinant is given by</p>
 <div class="math notranslate nohighlight">
 \[
 \log\bigg|\det\bigg(\frac{d \texttt{conv2d}(\mathbf{h};\mathbf{W})}{d\mathbf{h}}\bigg)\bigg| = h \cdot w \cdot \log |\det(\mathbf{W})|
@@ -463,16 +463,24 @@ document.write(`
 \[
 \mathbf{W} = \mathbf{P}\mathbf{L}(\mathbf{U}+\text{diag}(s))
 \]</div>
-<p>where <span class="math notranslate nohighlight">\(\mathbf{L}, \mathbf{U}\)</span> denote lower and upper triangular matrices, and <span class="math notranslate nohighlight">\(\mathbf{P}\)</span> denotes the permutation matrix. The log-determinant is given by</p>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{L}, \mathbf{U}\)</span> denote lower and upper triangular matrices, and <span class="math notranslate nohighlight">\(\mathbf{P}\)</span> denotes the permutation matrix that is kept fixed. Under such parameterization, the log-determinant is given by</p>
 <div class="math notranslate nohighlight">
 \[
 \log\bigg|\det\bigg(\frac{d \texttt{conv2d}(\mathbf{h};\mathbf{W})}{d\mathbf{h}}\bigg)\bigg| = \texttt{sum}(\log |\mathbf{s}|)
 \]</div>
-<p>which has a time complexity of <span class="math notranslate nohighlight">\(O(c)\)</span>—a significant reduction for large <span class="math notranslate nohighlight">\(c\)</span>! Under such parameterization, we initialize <span class="math notranslate nohighlight">\(\mathbf{P}\)</span> to be a permutation matrix and keep it fixed throughout the training process.</p>
+<p>which can be computed in <span class="math notranslate nohighlight">\(O(c)\)</span> amount of time—a significant reduction!</p>
 </section>
 <section id="affine-coupling-layer">
 <h3><span class="section-number">8.1.3. </span>Affine coupling layer<a class="headerlink" href="#affine-coupling-layer" title="Link to this heading">#</a></h3>
-<p>The affine coupling layer follows a similar architecture as in RealNVP.</p>
+<p>The affine coupling layer follows the same structure as in RealNVP. The input sequence <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> is chunked in half along the channel dimension, and the output <span class="math notranslate nohighlight">\(\mathbf{z}\)</span> is given by</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{equation*}
+\begin{cases}
+\mathbf{z}_{1:D/2} = \mathbf{x}_{1:D/2}\\
+\mathbf{z}_{D/2:D} = \mathbf{x}_{D/2:D} \odot \exp(s(\mathbf{x}_{1:D/2}))+ t(\mathbf{x}_{1:D/2})\\
+\end{cases}
+\end{equation*}\end{split}\]</div>
+<p>The scale and translation function <span class="math notranslate nohighlight">\(s\)</span>, <span class="math notranslate nohighlight">\(t\)</span>, like before, follows a ResNet architecture.</p>
 </section>
 </section>
 <section id="implementation">
@@ -516,8 +524,8 @@ document.write(`
 </div>
 </details>
 </div>
-<section id="the-three-components">
-<h3><span class="section-number">8.2.1. </span>The three components<a class="headerlink" href="#the-three-components" title="Link to this heading">#</a></h3>
+<section id="the-three-components-implementation">
+<h3><span class="section-number">8.2.1. </span>The Three Components Implementation<a class="headerlink" href="#the-three-components-implementation" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ActNorm</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -593,8 +601,8 @@ document.write(`
 </div>
 </div>
 </section>
-<section id="glow-coupling-layer">
-<h3><span class="section-number">8.2.2. </span>Glow coupling layer<a class="headerlink" href="#glow-coupling-layer" title="Link to this heading">#</a></h3>
+<section id="glow-block-implementation">
+<h3><span class="section-number">8.2.2. </span>GLOW Block implementation<a class="headerlink" href="#glow-block-implementation" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GlowBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -622,8 +630,8 @@ document.write(`
 </div>
 </div>
 </section>
-<section id="id1">
-<h3><span class="section-number">8.2.3. </span>GLOW<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<section id="glow-implementation">
+<h3><span class="section-number">8.2.3. </span>GLOW Implementation<a class="headerlink" href="#glow-implementation" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GLOW</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -696,8 +704,9 @@ document.write(`
 </div>
 </section>
 </section>
-<section id="on-mnist">
-<h2><span class="section-number">8.3. </span>On MNIST<a class="headerlink" href="#on-mnist" title="Link to this heading">#</a></h2>
+<section id="mnist">
+<h2><span class="section-number">8.3. </span>MNIST<a class="headerlink" href="#mnist" title="Link to this heading">#</a></h2>
+<p>We train a GLOW model on the MNIST dataset. The scale and translation parameter in the coupling layer follows the same architecture as in RealNVP. We stacked <span class="math notranslate nohighlight">\(3\)</span> GLOW blocks on top of each other. The model is trained for <span class="math notranslate nohighlight">\(30\)</span> epochs using the Adam optimzier with learning rate <span class="math notranslate nohighlight">\(10^{-3}\)</span>. The generated image is shown below.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">glow</span> <span class="o">=</span> <span class="n">GLOW</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -724,8 +733,9 @@ document.write(`
 </div>
 </div>
 </section>
-<section id="on-cifar10">
-<h2><span class="section-number">8.4. </span>On CIFAR10<a class="headerlink" href="#on-cifar10" title="Link to this heading">#</a></h2>
+<section id="cifar10">
+<h2><span class="section-number">8.4. </span>CIFAR10<a class="headerlink" href="#cifar10" title="Link to this heading">#</a></h2>
+<p>We applied the same architecture and hyperparameter settings to train another GLOW model on CIFAR10 dataset. The generated image is shown below.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">glow</span> <span class="o">=</span> <span class="n">GLOW</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -818,20 +828,20 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#architecture">8.1. Architecture</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#glow-architecture">8.1. GLOW Architecture</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#activation-normalization">8.1.1. Activation normalization</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#invertible-convolution">8.1.2. Invertible convolution</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#affine-coupling-layer">8.1.3. Affine coupling layer</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">8.2. Implementation</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-three-components">8.2.1. The three components</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#glow-coupling-layer">8.2.2. Glow coupling layer</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">8.2.3. GLOW</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-three-components-implementation">8.2.1. The Three Components Implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#glow-block-implementation">8.2.2. GLOW Block implementation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#glow-implementation">8.2.3. GLOW Implementation</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-mnist">8.3. On MNIST</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-cifar10">8.4. On CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist">8.3. MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cifar10">8.4. CIFAR10</a></li>
 </ul>
   </nav></div>
 

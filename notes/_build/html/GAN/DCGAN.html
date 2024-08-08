@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -411,9 +411,10 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gan-implementation">13.1. GAN Implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist">13.2. MNIST</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cifar10">13.3. CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dcgan-architecture">13.1. DCGAN Architecture</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dcgan-implementation">13.2. DCGAN Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist">13.3. MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cifar10">13.4. CIFAR10</a></li>
 </ul>
             </nav>
         </div>
@@ -427,10 +428,19 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="dcgan">
 <h1><span class="section-number">13. </span>DCGAN<a class="headerlink" href="#dcgan" title="Link to this heading">#</a></h1>
-<p>In deep convolutional GAN (DCGAN), both the generator and the discriminator is parameterized using deep convolutional neural networks. The original archtiecture is propsoed by Radford in 2015. We test the performance of DCGAN on both MNIST and CIFAR10 dataset.</p>
-<section id="gan-implementation">
-<h2><span class="section-number">13.1. </span>GAN Implementation<a class="headerlink" href="#gan-implementation" title="Link to this heading">#</a></h2>
-<p>For the generator and distribution, we follow the architecture shown in Figure 1. To help stabalize training, we initialized the weights of the convolutional filters as normal distribution with mean <span class="math notranslate nohighlight">\(0\)</span> and standard deviation of <span class="math notranslate nohighlight">\(0.02\)</span>.</p>
+<p>In a Deep Convolutional GAN (DCGAN), both the generator and the discriminator are parameterized using deep convolutional neural networks. The original architecture was proposed by Radford et al. in 2015. In this section, we implement and test the DCGAN model on the MNIST and CIFAR-10 datasets.</p>
+<section id="dcgan-architecture">
+<h2><span class="section-number">13.1. </span>DCGAN Architecture<a class="headerlink" href="#dcgan-architecture" title="Link to this heading">#</a></h2>
+<p>For the generator and discriminator, we follow the architecture shown in Figure 1. To help stabilize training, we initialize the weights of the convolutional filters with a normal distribution, where the mean is <span class="math notranslate nohighlight">\(0\)</span> and the standard deviation is <span class="math notranslate nohighlight">\(0.02\)</span>.</p>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/GAN/figures/conv_GAN_arch.png" style="max-width: 45%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
+    <strong> Figure 1 </strong>: Convolutional GAN discriminator and generator architecture.
+</p>
+</section>
+<section id="dcgan-implementation">
+<h2><span class="section-number">13.2. </span>DCGAN Implementation<a class="headerlink" href="#dcgan-implementation" title="Link to this heading">#</a></h2>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -548,8 +558,8 @@ document.write(`
 </div>
 </section>
 <section id="mnist">
-<h2><span class="section-number">13.2. </span>MNIST<a class="headerlink" href="#mnist" title="Link to this heading">#</a></h2>
-<p>We now test our implementation on the MNIST dataset. We trained the generator and discriminator using Adam optimizer with learning rate of <span class="math notranslate nohighlight">\(0.0002\)</span> and betas <span class="math notranslate nohighlight">\((0.5, 0.999)\)</span>.</p>
+<h2><span class="section-number">13.3. </span>MNIST<a class="headerlink" href="#mnist" title="Link to this heading">#</a></h2>
+<p>We now test our implementation on the MNIST dataset. We trained the generator and discriminator for 5 epochs using Adam optimizer with learning rate of <span class="math notranslate nohighlight">\(0.0002\)</span> and betas <span class="math notranslate nohighlight">\((0.5, 0.999)\)</span>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discriminator</span> <span class="o">=</span> <span class="n">Discriminator</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -581,8 +591,8 @@ document.write(`
 </div>
 </section>
 <section id="cifar10">
-<h2><span class="section-number">13.3. </span>CIFAR10<a class="headerlink" href="#cifar10" title="Link to this heading">#</a></h2>
-<p>Next, we train CIFAR10 with the same setting, we see that the model generates images that seems like CIFAR10 images.</p>
+<h2><span class="section-number">13.4. </span>CIFAR10<a class="headerlink" href="#cifar10" title="Link to this heading">#</a></h2>
+<p>We train CIFAR10 under the same setting. The generated image is shown below.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fixed_noise</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
@@ -678,9 +688,10 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#gan-implementation">13.1. GAN Implementation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist">13.2. MNIST</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cifar10">13.3. CIFAR10</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dcgan-architecture">13.1. DCGAN Architecture</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dcgan-implementation">13.2. DCGAN Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mnist">13.3. MNIST</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cifar10">13.4. CIFAR10</a></li>
 </ul>
   </nav></div>
 

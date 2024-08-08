@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -425,75 +425,38 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="flow-based-models">
 <h1><span class="section-number">6. </span>Flow based models<a class="headerlink" href="#flow-based-models" title="Link to this heading">#</a></h1>
-<p>So far, we have covered a class of generative models that estimate the probability distribution <span class="math notranslate nohighlight">\(p(\mathbf{x})\)</span> in an autoregressive manner. However, these models suffer from a few drawbacks, including:</p>
-<ol class="arabic simple">
-<li><p>Slow sampling speed</p></li>
-<li><p>Lack a latent representation</p></li>
-</ol>
-<p>In this chapter, we discuss flow based models, which are constructed by finding a mapping <span class="math notranslate nohighlight">\(f\)</span> that transforms the original distribution <span class="math notranslate nohighlight">\(p_\mathbf{x}(x)\)</span> to a simpler distribution <span class="math notranslate nohighlight">\(p_\mathbf{z}(z)\)</span> (for example, a Gaussian distribution). We can then generate new samples by sampling from the distribution <span class="math notranslate nohighlight">\(p_Z(z)\)</span> and then applying the inverse transformation <span class="math notranslate nohighlight">\(f^{-1}\)</span>.</p>
-<head>
-  <meta charset="UTF-8">
-  <title>Katex</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
-</head>
+<p>Flow based model is another class of generative model which learns the data distribution by finding a map <span class="math notranslate nohighlight">\(f\)</span> that transforms the original distribution <span class="math notranslate nohighlight">\(p_\mathbf{x}(x)\)</span> to a simpler distribution <span class="math notranslate nohighlight">\(p_\mathbf{z}(z)\)</span> (for example, a Gaussian distribution). To generate new samples, we simply sample from the distribution <span class="math notranslate nohighlight">\(p_\mathbf{z}(z)\)</span> and then apply the inverse transformation <span class="math notranslate nohighlight">\(f^{-1}\)</span>.</p>
 <div style="display: flex; justify-content: center;">
  <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Flow/figures/FLOW.png" style="max-width: 55%; height: auto;">  
 </div>
 <p style="text-align: center; font-size: 14px;"> 
-    <strong> Figure 1 </strong>: Flow-based model.
+    <strong> Figure 1 </strong>: Illustration of flow-based model.
 </p>
-<p>To train the model, we maximize the log-likelihood, which, by applying the change of variables formula, can be expressed as</p>
+<p>To train the model, we maximize the log-likelihood like before, which, by applying the change of variables formula, can be expressed as</p>
 <div class="math notranslate nohighlight">
 \[p_\mathbf{x}(x) = p_{\mathbf{z}}(z) \bigg|\frac{df}{d\mathbf{x}}\bigg| \implies \log p_\mathbf{x}(x) = \log p_{\mathbf{z}}(z) + \log \bigg|\frac{df}{d\mathbf{x}}\bigg|\]</div>
-<p>Where <span class="math notranslate nohighlight">\(|\frac{df}{d\mathbf{x}}|\)</span> denotes the Jacobian of <span class="math notranslate nohighlight">\(f\)</span> with respect to <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>. We can choose the latent variable <span class="math notranslate nohighlight">\(\mathbf{z}\)</span> so that <span class="math notranslate nohighlight">\(p_{\mathbf{z}}(z)\)</span> takes a simple form. It remains choosing a suitable mapping <span class="math notranslate nohighlight">\(f\)</span>. We want to choose <span class="math notranslate nohighlight">\(f\)</span> so that the following requirement are met</p>
+<p>Where <span class="math notranslate nohighlight">\(|\frac{df}{d\mathbf{x}}|\)</span> denotes the Jacobian of <span class="math notranslate nohighlight">\(f\)</span> with respect to <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>. We can always choose the variable <span class="math notranslate nohighlight">\(\mathbf{z}\)</span> so that <span class="math notranslate nohighlight">\(p_{\mathbf{z}}(z)\)</span> admits a simple form. The challenge then becomes choosing an appropriate mapping <span class="math notranslate nohighlight">\(f\)</span>. Based on the setup above, we see that the transformation <span class="math notranslate nohighlight">\(f\)</span> must satisfy the following requirements</p>
 <ol class="arabic simple">
-<li><p>Invertible: need to be able to sample</p></li>
-<li><p>Differentiable: for optimization</p></li>
-<li><p>The Jacobian takes in simple form: so that the log-likelihood is easy to evaluate</p></li>
+<li><p>Invertible: Need to be able to sample</p></li>
+<li><p>Differentiable: For optimization</p></li>
+<li><p>The Jacobian takes in simple form: So that the log-likelihood is easy to evaluate</p></li>
 </ol>
-<p>In this section, we discuss different design choices of the invertible mapping <span class="math notranslate nohighlight">\(f\)</span>. We start with a toy example.</p>
+<p>Different flow-based models primarily differ in their choice of flow function. In this section, we discuss different approaches to parameterizing these transformations, starting with a toy example of modeling a mixture of Gaussian data.</p>
 <section id="toy-example-mixture-of-gaussians">
 <h2><span class="section-number">6.1. </span>Toy example: Mixture of Gaussians<a class="headerlink" href="#toy-example-mixture-of-gaussians" title="Link to this heading">#</a></h2>
-<p>Suppose we have 3000 samples from a mixture of three Gaussians, with unknown weights, mean, and variance.</p>
-<div class="cell tag_hide-input docutils container">
-<details class="hide above-input">
-<summary aria-label="Toggle hidden content">
-<span class="collapsed">Show code cell source</span>
-<span class="expanded">Hide code cell source</span>
-</summary>
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">torch</span> 
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">TensorDataset</span><span class="p">,</span> <span class="n">DataLoader</span>
-<span class="kn">from</span> <span class="nn">torch.distributions</span> <span class="kn">import</span> <span class="n">Normal</span>
-<span class="kn">from</span> <span class="nn">torch.distributions.uniform</span> <span class="kn">import</span> <span class="n">Uniform</span>
-<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
-<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
-<span class="kn">from</span> <span class="nn">glow</span> <span class="kn">import</span> <span class="o">*</span>
-
-<span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="mi">3000</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</details>
+<p>Suppose we have <span class="math notranslate nohighlight">\(3000\)</span> samples from a mixture of three Gaussians, with unknown weights, mean, and variance. Our goal is to learn the distribution of the data, by finding a transformation <span class="math notranslate nohighlight">\(f\)</span> that maps the data distribution <span class="math notranslate nohighlight">\(p_{\mathbf{x}}(x)\)</span> to the uniform distribution <span class="math notranslate nohighlight">\(p_{\mathbf{z}}(z)\)</span>.</p>
+<div class="cell tag_remove-input docutils container">
 <div class="cell_output docutils container">
 <img alt="../_images/26085777b3083c4c1b5c5773be14b8eb6ede93752293c2cc7c074e253e387057.png" src="../_images/26085777b3083c4c1b5c5773be14b8eb6ede93752293c2cc7c074e253e387057.png" />
 </div>
 </div>
-<p>We want to find a transformation <span class="math notranslate nohighlight">\(f\)</span> that maps <span class="math notranslate nohighlight">\(p_{\mathbf{x}}(x)\)</span> to the uniform distribution <span class="math notranslate nohighlight">\(p_{\mathbf{z}}(z)\)</span>. Recall that for any random variable <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>, the distribution of <span class="math notranslate nohighlight">\(\mathbf{z}=F_\mathbf{x}(\mathbf{x})\)</span> follows a uniform distribution since</p>
+<p>Recall that for any random variable <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>, let <span class="math notranslate nohighlight">\(F_\mathbf{x}\)</span> be its c.d.f, the distribution of <span class="math notranslate nohighlight">\(\mathbf{z}=F_\mathbf{x}(\mathbf{x})\)</span> is uniform since</p>
 <div class="math notranslate nohighlight">
 \[F_\mathbf{z}(z)=\mathbb{P}\{\mathbf{z}\leq z\} = \mathbb{P}\{F_\mathbf{x}(\mathbf{x})\leq z\} = \mathbb{P}\{\mathbf{x}\leq F_\mathbf{x}^{-1}(z)\} = F_\mathbf{x}(F_\mathbf{x}^{-1}(z))=z\]</div>
-<p>Since we know <span class="math notranslate nohighlight">\(p_\mathbf{x}(x)\)</span> is a mixture of three Gaussians. We have</p>
+<p>Because we know <span class="math notranslate nohighlight">\(p_\mathbf{x}(x)\)</span> is a mixture of three Gaussians. We have</p>
 <div class="math notranslate nohighlight">
-\[p_\mathbf{x}(x) = w_1\mathcal{N}(x; \mu_1, \sigma_1) + w_2\mathcal{N}(x; \mu_2, \sigma_2) + w_3\mathcal{N}(x; \mu_3, \sigma_3)\]</div>
-<p>Therefore, if we choose <span class="math notranslate nohighlight">\(f\)</span> to be the c.d.f of <span class="math notranslate nohighlight">\(p_\mathbf{x}(x)\)</span>, then the output is guaranteed to be a uniform distribution. This suggests that we can parameterize <span class="math notranslate nohighlight">\(f\)</span> as</p>
-<div class="math notranslate nohighlight">
-\[z=f(x)=w_1\Phi(x;\mu_1, \sigma_1) + w_2\Phi(x;\mu_2, \sigma_2) + w_3\Phi(x;\mu_3, \sigma_3)\]</div>
-<p>Using the change of variables formula gives us</p>
+\[F_\mathbf{x}(x) = w_1\Phi(x;\mu_1, \sigma_1) + w_2\Phi(x;\mu_2, \sigma_2) + w_3\Phi(x;\mu_3, \sigma_3)\]</div>
+<p>Where <span class="math notranslate nohighlight">\(\Phi\)</span> denotes the c.d.f of standard normal distribution. This means that if we choose <span class="math notranslate nohighlight">\(f=F_\mathbf{x}(x)\)</span>, then the output is guaranteed to be a uniform distribution. By applying the change of variables formula, we have</p>
 <div class="math notranslate nohighlight">
 \[\log p_\mathbf{x}(x) = \log p_{\mathbf{z}}(z) + \log \bigg|\frac{df}{d\mathbf{x}}\bigg|\]</div>
 <p>The log-likelihood of the data <span class="math notranslate nohighlight">\(\{x_i\}_{\in [n]}\)</span> is then given by</p>
@@ -504,6 +467,7 @@ document.write(`
      &amp;= \sum_{i=1}^n \log f(x_i) + \sum_i \log \bigg|w_1\Phi_1'(x_i) + w_2\Phi_2'(x_i)+ w_3\Phi_3'(x_i)\bigg|\\
 \end{align*}
 \end{split}\]</div>
+<p>And we can find the paramters by maximizing the objective above.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MixtureFlow</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -528,7 +492,7 @@ document.write(`
 </div>
 </div>
 </div>
-<p>We train the model with <span class="math notranslate nohighlight">\(200\)</span> epochs using Adam optimizer with learning rate <span class="math notranslate nohighlight">\(0.3\)</span>.</p>
+<p>We train the flow model with <span class="math notranslate nohighlight">\(200\)</span> epochs using Adam optimizer with learning rate <span class="math notranslate nohighlight">\(0.3\)</span>. After training, we see that <span class="math notranslate nohighlight">\(f\)</span> indeed transforms our data into a uniform distribution.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mixture</span> <span class="o">=</span> <span class="n">MixtureFlow</span><span class="p">()</span>
@@ -537,7 +501,6 @@ document.write(`
 </div>
 </div>
 </div>
-<p>We see that the transformation indeed transforms our data into a uniform distribution.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -560,7 +523,7 @@ document.write(`
 <img alt="../_images/8988c200375c5b3bdd76d247da8fe547fbe14cdf4ad8479e6f90fbc64d1708de.png" src="../_images/8988c200375c5b3bdd76d247da8fe547fbe14cdf4ad8479e6f90fbc64d1708de.png" />
 </div>
 </div>
-<p>We can also plot the final flow function. Note that the function is clearly invertible.</p>
+<p>We can also plot the flow function, which is clearly invertible.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -582,7 +545,7 @@ document.write(`
 <img alt="../_images/c8222d13bcd21d2d14bab73d71ca8855a93ad35f0d820b19ae59ec97703c4e5f.png" src="../_images/c8222d13bcd21d2d14bab73d71ca8855a93ad35f0d820b19ae59ec97703c4e5f.png" />
 </div>
 </div>
-<p>We now generate samples by first sampling from the uniform distribution and then apply the inverse transformation <span class="math notranslate nohighlight">\(f^{-1}\)</span>. Note that the generated sample is closely related to the generated samples.</p>
+<p>Finally, we generate samples by first sampling from a uniform distribution and then applying the inverse transformation <span class="math notranslate nohighlight">\(f^{-1}\)</span>. We generated approximately <span class="math notranslate nohighlight">\(10,000\)</span> samples. Note that they are consistent with the the data distribution.</p>
 <div class="cell tag_hide-input docutils container">
 <details class="hide above-input">
 <summary aria-label="Toggle hidden content">

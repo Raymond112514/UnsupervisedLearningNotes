@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -411,7 +411,10 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-simplified-training-scheme">17.1. A simplified training scheme</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusion-model-the-objective">17.1. Diffusion model: the objective</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-lower-variance-estimate">17.2. A Lower Variance Estimate</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-simpler-training-scheme">17.3. A Simpler Training Scheme</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#toy-example-swiss-roll">17.4. Toy example: Swiss Roll</a></li>
 </ul>
             </nav>
         </div>
@@ -425,23 +428,27 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="diffusion-models">
 <h1><span class="section-number">17. </span>Diffusion models<a class="headerlink" href="#diffusion-models" title="Link to this heading">#</a></h1>
-<p>In diffusion model, we have a forward process <span class="math notranslate nohighlight">\(q(\mathbf{x}_t|\mathbf{x}_{t-1})\)</span> which adds noise according to some variance schedule <span class="math notranslate nohighlight">\(\{\beta_t\}\in (0,1)\)</span> (where <span class="math notranslate nohighlight">\(\mathbf{x}_0\)</span> denote the original image). Formally, define</p>
+<p>The diffusion model, proposed by Dickstein et al. in 2015, is inspired by techniques from nonequilibrium thermodynamics. To get an intuition, consider the problem of modelling the distribution of a drop on ink in water. This is a difficult problem. However, as time progresses, the ink diffuses until it reaches an equilibrium state where the distribution becomes simpler and more uniform. Nonequilibrium thermodynamics provides the tools to describe how the distribution evolves throughout the diffusion process. With sufficiently small step size, it turns out we can go from the simple equilibrium distribution to a more complex distribution. <br></p>
+<p>The same idea holds for modeling image data. In diffusion model, we add Gaussian noise to naturally occuring images, which is typically distributed in complex way. By gradually adding these noises, eventually we get a Gaussian distribution. If we can learn the reverse process, then we can generate new images by simply sampling from the Gaussian distribution and applying the learned reverse diffusion process to transform this noise back into a realistic image.</p>
+<section id="diffusion-model-the-objective">
+<h2><span class="section-number">17.1. </span>Diffusion model: the objective<a class="headerlink" href="#diffusion-model-the-objective" title="Link to this heading">#</a></h2>
+<p>Formally, let <span class="math notranslate nohighlight">\(\mathbf{x}_0\)</span> denote the original image. We define a forward process <span class="math notranslate nohighlight">\(q(\mathbf{x}_t|\mathbf{x}_{t-1})\)</span> which adds noise according to some variance schedule <span class="math notranslate nohighlight">\(\{\beta_t\}\in (0,1)\)</span>.</p>
 <div class="math notranslate nohighlight">
 \[q(\mathbf{x}_t|\mathbf{x}_{t-1}) = \mathcal{N}(\mathbf{x}_t|\sqrt{1-\beta_t}\mathbf{x}_{t-1}, \beta_t \mathbf{I})\]</div>
-<p>Letting <span class="math notranslate nohighlight">\(\alpha_t=1-\beta_t\)</span> and <span class="math notranslate nohighlight">\(\bar{\alpha}_t = \prod_{i=1}^t \alpha_i\)</span>, we have</p>
+<p>To see what happens asymptotically, consider letting <span class="math notranslate nohighlight">\(\alpha_t=1-\beta_t\)</span> and <span class="math notranslate nohighlight">\(\bar{\alpha}_t = \prod_{i=1}^t \alpha_i\)</span>, we have</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
     \mathbf{x}_t&amp;= \sqrt{\alpha_t}\mathbf{x}_{t-1} + \sqrt{1-\alpha_t} \epsilon_{t-1}\\
     &amp;= \sqrt{\alpha_t}(\sqrt{\alpha_{t-1}}\mathbf{x}_{t-2} + \sqrt{1-\alpha_{t-1}}\epsilon_{t-2}) + \sqrt{1-\alpha_t}\epsilon_{t-1}\\
     &amp;= \sqrt{\alpha_t\alpha_{t-1}}\mathbf{x}_{t-2} + \sqrt{1-\alpha_t\alpha_{t-1}}\epsilon_{t-3}\\
-    &amp;= \sqrt{\bar{\alpha}_t} \mathbf{x}_{0} + \sqrt{1-\bar{\alpha}_t}\epsilon_0
+    &amp;= \sqrt{\bar{\alpha}_t} \mathbf{x}_{0} + \sqrt{1-\bar{\alpha}_t}\epsilon
 \end{align*}
 \end{split}\]</div>
-<p>Since <span class="math notranslate nohighlight">\(\alpha_t\in (0,1)\)</span>, we see that <span class="math notranslate nohighlight">\(\bar{\alpha}_t\rightarrow 0\)</span> as <span class="math notranslate nohighlight">\(t\to\infty\)</span>. This suggests that as <span class="math notranslate nohighlight">\(t\to\infty\)</span>, we have that</p>
+<p>Since <span class="math notranslate nohighlight">\(\alpha_t\in (0,1)\)</span>, we see that <span class="math notranslate nohighlight">\(\bar{\alpha}_t\rightarrow 0\)</span> as <span class="math notranslate nohighlight">\(t\to\infty\)</span>. This suggests that as <span class="math notranslate nohighlight">\(t\to\infty\)</span>, we have</p>
 <div class="math notranslate nohighlight">
 \[q(\mathbf{x}_t|\mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t|\sqrt{\bar{\alpha}_t} \mathbf{x}_{0}, (1-\bar{\alpha}_t)\mathbf{I})\rightarrow \mathcal{N}(\mathbf{0}, \mathbf{I})\]</div>
-<p>In other words, the distribution becomes an isotropic Gaussian. If we can reverse the above process, then we can generate new samples by sampling from <span class="math notranslate nohighlight">\(\mathcal{N}(\mathbf{0}, \mathbf{I})\)</span> and then sample from <span class="math notranslate nohighlight">\(q(\mathbf{x}_{t-1}|\mathbf{x}_t)\)</span>. Unfortunately, we can not easily estimate <span class="math notranslate nohighlight">\(q(\mathbf{x}_{t-1}|\mathbf{x}_t)\)</span>. Therefore, consider a parameterized estimation of these distributions <span class="math notranslate nohighlight">\(p_{\theta}(\mathbf{x}_{t-1}|\mathbf{x}_t)\)</span>. Note that this is essentially a latent variable model with latent variables <span class="math notranslate nohighlight">\(\mathbf{z}=\mathbf{x}_{1:T}\)</span>. Therefore, applying the variational lower bound, we have</p>
+<p>In other words, the distribution converges to an isotropic Gaussian as we continue to add noise. To be able to generate new images, we want to learn the reverse process. In particular, we want to learn the distribution <span class="math notranslate nohighlight">\(q(\mathbf{x}_{t-1}|\mathbf{x}_t)\)</span>. Unfortunately, we can not easily estimate <span class="math notranslate nohighlight">\(q(\mathbf{x}_{t-1}|\mathbf{x}_t)\)</span>. Therefore, we use a parameterized family of distributions <span class="math notranslate nohighlight">\(p_{\theta}(\mathbf{x}_{t-1}|\mathbf{x}_t)\)</span> to estimate <span class="math notranslate nohighlight">\(q(\mathbf{x}_{t-1}|\mathbf{x}_t)\)</span>. Note that this is essentially a latent variable model with latent variables being <span class="math notranslate nohighlight">\(\mathbf{z}=\mathbf{x}_{1:T}\)</span>. Therefore, applying the variational lower bound, we have</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
@@ -459,11 +466,12 @@ document.write(`
 <ol class="arabic simple">
 <li><p>Reconstruction term:  measures the likelihood of reconstruction in the first latent layer.</p></li>
 <li><p>Prior matching term: ensures that the learned final latent distribution matches the prior distribution.</p></li>
-<li><p>Consistency term:</p></li>
+<li><p>Consistency term: the denoising step from a noisier image should match the corresponding noising step from a cleaner image</p></li>
 </ol>
-<section id="a-simplified-training-scheme">
-<h2><span class="section-number">17.1. </span>A simplified training scheme<a class="headerlink" href="#a-simplified-training-scheme" title="Link to this heading">#</a></h2>
-<p>Note that all of the terms in the variational lower bound can be computed using Monte Carlo estimates. However, in the consistency term, we need to sample over two variables, which has higher variance than having only one variable. Therefore, it is more desirable to reformulate ELBO so that each conditionals only condition on one variable. This can be done by noting that</p>
+<p>Given a collection of images, once we noised these images, we can estimate the loss above using Monte Carlo methods. By using stochastic gradient descent, we can solve for the optimal parameters.</p>
+</section>
+<section id="a-lower-variance-estimate">
+<h2><span class="section-number">17.2. </span>A Lower Variance Estimate<a class="headerlink" href="#a-lower-variance-estimate" title="Link to this heading">#</a></h2>
 <div class="math notranslate nohighlight">
 \[\begin{split}
 \begin{align*}
@@ -484,7 +492,148 @@ document.write(`
      &amp;= \text{KL}(q(\mathbf{x}_T|\mathbf{x}_0)||p(\mathbf{x}_T)) + \sum_{t=2}^T \mathbb{E}_{ \mathbf{x}_{t}|\mathbf{x}_0}[\text{KL}(q(\mathbf{x}_{t-1}|\mathbf{x}_{t}, \mathbf{x}_0)||p_{\theta}(\mathbf{x}_{t-1}|\mathbf{x}_t))] - \mathbb{E}_{\mathbf{x}_{1}|\mathbf{x}_0}[\log p_{\theta}(\mathbf{x}_0|\mathbf{x}_1)]\\
 \end{align*}
 \end{split}\]</div>
-<p>Each of these term can be computed efficiently.</p>
+<p>Now each of the expectation only requires sampling over one random variable. This gives a lower variance estiamte.</p>
+</section>
+<section id="a-simpler-training-scheme">
+<h2><span class="section-number">17.3. </span>A Simpler Training Scheme<a class="headerlink" href="#a-simpler-training-scheme" title="Link to this heading">#</a></h2>
+<p>It turns out that</p>
+<div class="math notranslate nohighlight">
+\[q(\mathbf{x}_{t-1}|\mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}(\mathbf{x}_{t-1}; \underbrace{\frac{\sqrt{\alpha_t}(1-\bar{\alpha}_{t-1})\mathbf{x}_t+\sqrt{\bar{\alpha}_{t-1}}(1-\alpha_t)\mathbf{x}_0}{1-\bar{\alpha}_t}}_{\mu_q(\mathbf{x}_t, \mathbf{x}_0)}, \underbrace{\frac{(1-\alpha_t)(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}}_{\Sigma(t)}\mathbf{I})\]</div>
+<p>Next, recall that</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{x}_t = \sqrt{\bar{\alpha}_t} \mathbf{x}_{0} + \sqrt{1-\bar{\alpha}_t}\epsilon \implies \mathbf{x}_0=\frac{1}{\sqrt{\bar{\alpha_t}}}\bigg(\mathbf{x}_t - \sqrt{1-\bar{\alpha}_t}\epsilon_t\bigg)\]</div>
+<p>Substituting into <span class="math notranslate nohighlight">\(\mu_q(\mathbf{x}_t, \mathbf{x}_0)\)</span>, we see that</p>
+<div class="math notranslate nohighlight">
+\[\mu_q(\mathbf{x}_t, \mathbf{x}_0) = \frac{1}{\sqrt{\alpha_t}}\bigg(\mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_t\bigg)\]</div>
+<p>Since <span class="math notranslate nohighlight">\(p_\theta(\mathbf{x}_t|\mathbf{x}_{t-1}) = \mathcal{N}(\mathbf{x}_t|\mu_{\theta}, \Sigma_\theta)\)</span>, by reparameterizing</p>
+<div class="math notranslate nohighlight">
+\[\mu_{\theta}=\frac{1}{\sqrt{\alpha_t}}\bigg(\mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_\theta\bigg)\]</div>
+<p>Then the loss term can be written as</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align*}
+    L_t &amp;= \mathbb{E}_{\mathbf{x}_0, \epsilon}\bigg[\frac{1}{2\|\Sigma_\theta\|_2^2}\|\mu_t(\mathbf{x}_t, \mathbf{x}_0) - \mu_{\theta}(\mathbf{x}_t, t)\|_2^2\bigg]\\
+    &amp;= \mathbb{E}_{\mathbf{x}_0, \epsilon}\bigg[\frac{(1-\alpha_t)^2}{2\alpha_t(1-\bar{\alpha}_t)\|\Sigma_\theta\|_2^2}\|\epsilon_t - \epsilon_{\theta}(\mathbf{x}_t, t)\|_2^2\bigg]\\
+    &amp;= \mathbb{E}_{\mathbf{x}_0, \epsilon}\bigg[\frac{(1-\alpha_t)^2}{2\alpha_t(1-\bar{\alpha}_t)\|\Sigma_\theta\|_2^2}\|\epsilon_t - \epsilon_{\theta}(\sqrt{\bar{\alpha}_t} \mathbf{x}_{0} + \sqrt{1-\bar{\alpha}_t}\epsilon, t)\|_2^2\bigg]\\
+\end{align*}
+\end{split}\]</div>
+<p>In DDPM, Ho et al. noticed that training the diffusion model works better if we ignore the weighing factor. The final loss is given by</p>
+<div class="math notranslate nohighlight">
+\[L_t = \mathbb{E}_{t\sim[1, T]\mathbf{x}_0, \epsilon}\bigg[\|\epsilon_t - \epsilon_{\theta}(\sqrt{\bar{\alpha}_t} \mathbf{x}_{0} + \sqrt{1-\bar{\alpha}_t}\epsilon, t)\|_2^2\bigg]\]</div>
+<p>And this gives the final algorithm for training a diffusion model.</p>
+<div style="display: flex; justify-content: center;">
+ <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Diffusion/figures/algorithm.png" style="max-width: 70%; height: auto;">  
+</div>
+<p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
+    <strong> Figure 1 </strong>: Algorithm for training diffusion model.
+</p></section>
+<section id="toy-example-swiss-roll">
+<h2><span class="section-number">17.4. </span>Toy example: Swiss Roll<a class="headerlink" href="#toy-example-swiss-roll" title="Link to this heading">#</a></h2>
+<p>We now implement a toy diffusion model to model the distribution of the swiss roll dataset. We use <span class="math notranslate nohighlight">\(100000\)</span> points as our training data.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_swiss_roll</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">make_swiss_roll</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>
+<span class="n">X</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="n">X</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="n">X</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;2D Swiss roll data&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<img alt="../_images/630e677175858908c79bbf404628b6698fa9c1f342ed4bce8a16ba8744525cc1.png" src="../_images/630e677175858908c79bbf404628b6698fa9c1f342ed4bce8a16ba8744525cc1.png" />
+</div>
+</div>
+<p>We set the number of timesteps <span class="math notranslate nohighlight">\(T=50\)</span>. The variance schedule follows a linear schedule from <span class="math notranslate nohighlight">\(10^{-3}\)</span> to <span class="math notranslate nohighlight">\(0.02\)</span>. The noising process is shown below. We see that the swiss roll data eventually becomes a unit Gaussian as we continue to add noise.</p>
+<div class="cell tag_remove-input docutils container">
+<div class="cell_output docutils container">
+<img alt="../_images/faf982cb8c026dda96dd822821de54671f281153de6492c0b1c135b311c5435a.png" src="../_images/faf982cb8c026dda96dd822821de54671f281153de6492c0b1c135b311c5435a.png" />
+</div>
+</div>
+<p>To model the noise, we use a simple feedforward network with <span class="math notranslate nohighlight">\(3\)</span> hidden layers. Before passing the points into the network, we concatenate it with the current timestep.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleDiffusion</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">in_dim</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">out_dim</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleDiffusion</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">out_dim</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="n">noise</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">noise</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">alpha_</span><span class="p">,</span> <span class="n">n_epoch</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">print_every</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
+    <span class="n">train_loss</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">)</span>
+    <span class="n">scheduler</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">StepLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_epoch</span><span class="p">):</span>
+        <span class="n">epoch_loss</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">batch_size</span><span class="p">):</span>
+            <span class="n">X_batch</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">batch_size</span><span class="p">]</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">X_noised</span><span class="p">,</span> <span class="n">eps</span> <span class="o">=</span> <span class="n">add_noise</span><span class="p">(</span><span class="n">X_batch</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">alpha_</span><span class="p">)</span>
+            <span class="n">eps_pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_noised</span><span class="p">,</span> <span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="n">T</span><span class="p">))</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()(</span><span class="n">eps_pred</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="n">epoch_loss</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="n">epoch_loss</span> <span class="o">=</span> <span class="n">epoch_loss</span> <span class="o">*</span> <span class="n">batch_size</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">train_loss</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">epoch_loss</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">, Loss: </span><span class="si">{</span><span class="n">epoch_loss</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">epoch</span> <span class="o">%</span> <span class="n">print_every</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">train_loss</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We trained a simple diffusion model with a hidden dimension of <span class="math notranslate nohighlight">\(64\)</span> for <span class="math notranslate nohighlight">\(100\)</span> epochs, using a learning rate of <span class="math notranslate nohighlight">\(10^{-4}\)</span>. The figure below illustrates the denoising process, demonstrating that the model successfully learns to denoise. The generated samples resemble the Swiss roll dataset.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">SimpleDiffusion</span><span class="p">(</span><span class="n">hidden_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+<span class="n">train_loss</span> <span class="o">=</span> <span class="n">train</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">alpha_</span><span class="p">,</span> <span class="n">n_epoch</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">,</span> <span class="n">print_every</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell tag_remove-input docutils container">
+</div>
+<div class="cell tag_remove-input docutils container">
+<div class="cell_output docutils container">
+<img alt="../_images/17df40a8718a65b603b2bd7ee3177fe985199d329837c55a5b3f70d78ceaa081.png" src="../_images/17df40a8718a65b603b2bd7ee3177fe985199d329837c55a5b3f70d78ceaa081.png" />
+</div>
+</div>
 </section>
 </section>
 
@@ -552,7 +701,10 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-simplified-training-scheme">17.1. A simplified training scheme</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusion-model-the-objective">17.1. Diffusion model: the objective</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-lower-variance-estimate">17.2. A Lower Variance Estimate</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-simpler-training-scheme">17.3. A Simpler Training Scheme</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#toy-example-swiss-roll">17.4. Toy example: Swiss Roll</a></li>
 </ul>
   </nav></div>
 
