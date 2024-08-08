@@ -1,11 +1,11 @@
-# Welcome to your Jupyter Book
+# Notes on Deep Unsupervised Learning
 
-This is a small sample book to give you a feel for how book content is
-structured.
-It shows off a few of the major file types, as well as some sample content.
-It does not go in-depth into any particular topic - check out [the Jupyter Book documentation](https://jupyterbook.org) for more information.
+These are my notes on deep unsupervised learning, where I have implemented several classic generative models. My notes are primarily based on the Berkeley CS298-154 Deep Unsupervised Learning course and Tomczak's book on Deep Generative Modeling. Currently, I have covered five classes of generative models:
 
-Check out the content pages bundled with this sample book to see more.
+* Autoregressive models
+* Flow based models
+* Variational autoencoders
+* Generative adversarial networks
+* Diffusion models
 
-```{tableofcontents}
-```
+The write-ups for each section are still in progress, and I'm currently adding semisupervised learning method. 
