@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
-    <link rel="stylesheet" type="text/css" href="../_static/proof.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/proof.css?v=ca93fcec" />
     <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=4787184b" />
   
@@ -434,16 +434,12 @@ document.write(`
   <section class="tex2jax_ignore mathjax_ignore" id="pixelcnn">
 <h1><span class="section-number">4. </span>PixelCNN<a class="headerlink" href="#pixelcnn" title="Link to this heading">#</a></h1>
 <p>PixelCNN, like MADE, is a masking-based autoregressive model, is a masking-based autoregressive model introduced in the paper “Pixel Recurrent Neural Networks” by Aaron van den Oord in 2016. As its name implies, PixelCNN applies a special mask on the convolutional filters to ensure that the prediction for each pixel is dependent only on the previously observed pixels and not on future ones.</p>
-<div style="display: flex; justify-content: center;">
- <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Autoregressive/figures/pixelcnn_intro.png" style="max-width: 35%; height: auto;">  
-</div>
+<a class="bg-primary mb-1 reference internal image-reference" href="../_images/pixelcnn_intro.png"><img alt="fishy" class="bg-primary mb-1 align-center" src="../_images/pixelcnn_intro.png" style="width: 400px;" /></a>
 <p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
     <strong> Figure 1 </strong>: Example of PixelCNN convolutional filter with kernel size 5. The current pixel (pixel 13) is only allowed to depend on previous pixels (pixel 1-12). Future pixels (pixel 14-25) are masked by setting the convolutional filters to 0. 
 </p>
 <p>In the paper, Oord proposed two types of masks: Type A and Type B. The Type A mask ensures that the current pixel can only depend on previously processed pixels. In contrast, the Type B mask allows the current pixel to depend on both previous pixels and the same pixel in the current layer. The idea behind this design is that once the Type A mask is applied in the initial layer, the autoregressive property is enforced, therefore there is no need to block information flow in the subsequent layers.</p>
-<div style="display: flex; justify-content: center;">
- <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Autoregressive/figures/pixelcnn_mask.png" style="max-width: 40%; height: auto;">  
-</div>
+<a class="bg-primary mb-1 reference internal image-reference" href="../_images/pixelcnn_mask.png"><img alt="fishy" class="bg-primary mb-1 align-center" src="../_images/pixelcnn_mask.png" style="width: 500px;" /></a>
 <p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
     <strong> Figure 2 </strong>: Type A and type B mask. The blue regions are set to 1, while the gray regions are set to 0. 
 </p><section id="pixelcnn-architechture">
