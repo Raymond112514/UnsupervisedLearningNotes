@@ -440,7 +440,7 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="real-nvp">
 <h1><span class="section-number">7. </span>Real NVP<a class="headerlink" href="#real-nvp" title="Link to this heading">#</a></h1>
-<p>In 2014, Dinh et al. proposed a clever way of constructing the normalizing flow in their NICE (Non-linear Independent Components Estimation) model. A key component of the model is the additive coupling layer, which involves splitting the input sequence <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> into two parts and applying an affine transformation <span class="math notranslate nohighlight">\(f\)</span> defined as follows</p>
+<p>In 2014, Dinh et al. proposed a clever way of constructing the normalizing flow in their NICE (Non-linear Independent Components Estimation) model [1]. A key component of the model is the additive coupling layer, which involves splitting the input sequence <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> into two parts and applying an affine transformation <span class="math notranslate nohighlight">\(f\)</span> defined as follows</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{equation*}
 \begin{cases}
@@ -463,13 +463,11 @@ document.write(`
 \frac{\partial m_{\theta}}{\partial \mathbf{z}} &amp; 1
 \end{bmatrix} \implies \bigg|\frac{\partial \mathbf{z}}{\partial \mathbf{x}}\bigg|=1\end{split}\]</div>
 <p>One problem with <span class="math notranslate nohighlight">\(f\)</span> is that it only modifies half of <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>. To make use of the entire input sequence, the authors proposed stacking multiple coupling layers with alternating partitions of <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>. This allows the entire input to be updated and enhances the overall expressiveness of the model. <br></p>
-<div style="display: flex; justify-content: center;">
- <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Flow/figures/NICE_couple.png" style="max-width: 50%; height: auto;">  
-</div>
+<a class="bg-primary mb-1 reference internal image-reference" href="../_images/NICE_couple.png"><img alt="fishy" class="bg-primary mb-1 align-center" src="../_images/NICE_couple.png" style="width: 500px;" /></a>
 <p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
     <strong> Figure 1 </strong>: Stacking two NICE coupling layers ensures all variables in the input sequence are updated.
 </p>
-<p>Two years later, Dinh et al. introduced the RealNVP architecture, which builds on the NICE model by incorporating scaling in the additive coupling layer. The flow function in RealNVP retains a similar structure to that in NICE.</p>
+<p>Two years later, Dinh et al. introduced the RealNVP architecture, which builds on the NICE model by incorporating scaling in the additive coupling layer [2]. The flow function in RealNVP retains a similar structure to that in NICE.</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{equation*}
 \begin{cases}
@@ -492,9 +490,7 @@ document.write(`
 \frac{\partial \mathbf{z}_{D/2:D}}{\partial \mathbf{x}_{1:D/2}} &amp; \exp(s(\mathbf{x}_{1:D/2}))
 \end{bmatrix} \implies \bigg|\frac{\partial \mathbf{z}}{\partial \mathbf{x}}\bigg|=\exp(s(\mathbf{x}_{1:D/2}))\end{split}\]</div>
 <p>Which can be computed during the forward pass! However, the affine coupling layer suffers from the same problem: it only modifies half of the input sequence. Like before, the authors proposed stacking multiple layers with alternating patterns.</p>
-<div style="display: flex; justify-content: center;">
- <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Flow/figures/REALNVP_couple.png" style="max-width: 45%; height: auto;">  
-</div>
+<a class="bg-primary mb-1 reference internal image-reference" href="../_images/REALNVP_couple.png"><img alt="fishy" class="bg-primary mb-1 align-center" src="../_images/REALNVP_couple.png" style="width: 500px;" /></a>
 <p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
     <strong> Figure 2 </strong>: Stacking two RealNVP coupling layers ensures all variables in the input sequence are updated.
 </p><section id="realnvp-architecture">
@@ -508,9 +504,7 @@ document.write(`
 <div class="math notranslate nohighlight">
 \[\mathbf{x} = b\odot \mathbf{z} + (1-b) \odot \bigg((\mathbf{z} - t(b \odot \mathbf{z})) \odot \exp(-s(b \odot \mathbf{z}))\bigg)\]</div>
 <p>One advantage of this notation is that it allows us to use any binary mask we prefer, rather than just flattening and splitting the sequence in half. In their paper, Dinh et al. uses two types of masks: checkerboard masks and channel masks. Each affine coupling layer uses either type of mask.</p>
-<div style="display: flex; justify-content: center;">
- <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Flow/figures/masks.png" style="max-width: 45%; height: auto;">  
-</div>
+<a class="bg-primary mb-1 reference internal image-reference" href="../_images/masks.png"><img alt="fishy" class="bg-primary mb-1 align-center" src="../_images/masks.png" style="width: 500px;" /></a>
 <p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
     <strong> Figure 3 </strong>: Each affine coupling layer contains either a checkerboard mask or a channel mask.
 </p>
@@ -519,9 +513,7 @@ document.write(`
 <section id="realnvp-block">
 <h3><span class="section-number">7.1.2. </span>RealNVP Block<a class="headerlink" href="#realnvp-block" title="Link to this heading">#</a></h3>
 <p>A RealNVP block is composed of three layers of affine coupling layers with alternating checkerboard masks, followed by a squeeze operation, and then another three affine coupling layers with alternating channel masks. The squeeze operation reduces a tensor of shape <span class="math notranslate nohighlight">\([C, H, W]\)</span> to <span class="math notranslate nohighlight">\([4C, \frac{H}{2}, \frac{W}{2}]\)</span>. This trades spatial dimensions for the number of channels. In the final layer, the block is replaced by four alternating checkerboard masks.</p>
-<div style="display: flex; justify-content: center;">
- <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Flow/figures/squeeze.png" style="max-width: 50%; height: auto;">  
-</div>
+<a class="bg-primary mb-1 reference internal image-reference" href="../_images/squeeze.png"><img alt="fishy" class="bg-primary mb-1 align-center" src="../_images/squeeze.png" style="width: 500px;" /></a>
 <p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
     <strong> Figure 4 </strong>: Illustration of the squeeze operation. The operation maps tensor of shape [1, 4, 4] to [4, 2, 2]. 
 </p></section>
@@ -861,6 +853,9 @@ document.write(`
 <img alt="../_images/d623df9d8225c288056b5ed82bcd8f33fc9bbaae0be94d9927254459c1058f60.png" src="../_images/d623df9d8225c288056b5ed82bcd8f33fc9bbaae0be94d9927254459c1058f60.png" />
 </div>
 </div>
+<p><span style="font-size:20px;"><strong>Citations</strong></span></p>
+<p>[1] <a class="reference external" href="https://arxiv.org/pdf/1410.8516">https://arxiv.org/pdf/1410.8516</a> <br>
+[2] <a class="reference external" href="https://arxiv.org/pdf/1605.08803">https://arxiv.org/pdf/1605.08803</a></p>
 </section>
 </section>
 
