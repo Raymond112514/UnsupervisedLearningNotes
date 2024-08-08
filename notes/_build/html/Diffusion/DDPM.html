@@ -178,7 +178,7 @@ const thebe_selector_output = ".output, .cell_output"
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="../intro.html">
-                    Welcome to your Jupyter Book
+                    Notes on Deep Unsupervised Learning
                 </a>
             </li>
         </ul>
@@ -433,9 +433,7 @@ document.write(`
   <section class="tex2jax_ignore mathjax_ignore" id="denoising-diffusion-probabilistic-model">
 <h1><span class="section-number">18. </span>Denoising diffusion probabilistic model<a class="headerlink" href="#denoising-diffusion-probabilistic-model" title="Link to this heading">#</a></h1>
 <p>In the denoising diffusion probabilistic model, the authors used a U-Net architecture to predict the noise in the diffusion process. In this section, we implement and train a u-net based diffusion model on MNIST and CIFAR10 data. For the U-Net, we follow the architecture shown in Figure 1.</p>
-<div style="display: flex; justify-content: center;">
- <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Diffusion/figures/unet.png" style="max-width: 55%; height: auto;">  
-</div>
+<a class="bg-primary mb-1 reference internal image-reference" href="../_images/unet.png"><img alt="fishy" class="bg-primary mb-1 align-center" src="../_images/unet.png" style="width: 700px;" /></a>
 <p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
     <strong> Figure 1 </strong>: U-Net architecture for diffusion model.
 </p>
@@ -446,9 +444,7 @@ document.write(`
 <li><p>Up block</p></li>
 </ul>
 <p>The architecture of these component is shown in the figure below. For the attention used in the U-Net model, we applied layer normalization to the typical self attention layer.</p>
-<div style="display: flex; justify-content: center;">
- <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Diffusion/figures/component.png" style="max-width: 65%; height: auto;">  
-</div>
+<a class="bg-primary mb-1 reference internal image-reference" href="../_images/component.png"><img alt="fishy" class="bg-primary mb-1 align-center" src="../_images/component.png" style="width: 700px;" /></a>
 <p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
     <strong> Figure 2 </strong>: Architecture of double convolution, down block and up block in U-Net.
 </p>
@@ -740,6 +736,8 @@ document.write(`
 <img alt="../_images/b45fd0fa55ff54a08a4e4af9cf6e6405c02963660bc3b4ec1e447e4d4c1524c7.png" src="../_images/b45fd0fa55ff54a08a4e4af9cf6e6405c02963660bc3b4ec1e447e4d4c1524c7.png" />
 </div>
 </div>
+<p><span style="font-size:20px;"><strong>Citations</strong></span></p>
+<p>[1] <a class="reference external" href="https://arxiv.org/abs/2006.11239">https://arxiv.org/abs/2006.11239</a></p>
 </section>
 </section>
 

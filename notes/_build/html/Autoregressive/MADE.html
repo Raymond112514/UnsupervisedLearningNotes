@@ -178,7 +178,7 @@ const thebe_selector_output = ".output, .cell_output"
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="../intro.html">
-                    Welcome to your Jupyter Book
+                    Notes on Deep Unsupervised Learning
                 </a>
             </li>
         </ul>
@@ -537,15 +537,10 @@ document.write(`
 <span class="sd">    Implementation of MADE</span>
 <span class="sd">    Assume that input dimension = output dimension</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_len</span><span class="p">,</span> <span class="n">hidden_dims</span><span class="p">,</span> <span class="n">n_masks</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">hidden_dims</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">n_masks</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        @param max_len: int</span>
-<span class="sd">        @param hidden_dims: int</span>
-<span class="sd">        @param n_masks: int</span>
-<span class="sd">            Number of masks used in MADE</span>
-<span class="sd">        @param order: list</span>
-<span class="sd">            The ordering of input/output nodes (default raster order)</span>
-<span class="sd">        @param: device: string</span>
+<span class="sd">        @param n_masks: Number of masks used in MADE</span>
+<span class="sd">        @param order: The ordering of input/output nodes (default raster order)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">MADE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_len</span> <span class="o">=</span> <span class="n">max_len</span>
@@ -582,14 +577,11 @@ document.write(`
                 <span class="n">prev_order</span> <span class="o">=</span> <span class="n">curr_order</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">create_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prev_order</span><span class="p">,</span> <span class="n">curr_order</span><span class="p">,</span> <span class="n">last_layer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">create_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prev_order</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">curr_order</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">last_layer</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Helper function for sample_masks, given the ordering of previous layer and current layer,</span>
 <span class="sd">        generates the mask according to (8), (9) in the MADE paper</span>
-<span class="sd">        @param prev_order: list</span>
-<span class="sd">        @param curr_order: list</span>
-<span class="sd">        @param last_layer: boolean</span>
-<span class="sd">            True if current layer is the last layer</span>
+<span class="sd">        @param last_layer: True if current layer is the last layer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">last_layer</span><span class="p">:</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">((</span><span class="n">prev_order</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">curr_order</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
@@ -609,14 +601,11 @@ document.write(`
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; </span>
-<span class="sd">        @param: torch.tensor of shape [B, L]</span>
+<span class="sd">        x: [B, L]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; </span>
-<span class="sd">        @param n_samples: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
         <span class="n">samples</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_len</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_len</span><span class="p">):</span>

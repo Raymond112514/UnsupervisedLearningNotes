@@ -178,7 +178,7 @@ const thebe_selector_output = ".output, .cell_output"
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="../intro.html">
-                    Welcome to your Jupyter Book
+                    Notes on Deep Unsupervised Learning
                 </a>
             </li>
         </ul>
@@ -428,8 +428,11 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="diffusion-models">
 <h1><span class="section-number">17. </span>Diffusion models<a class="headerlink" href="#diffusion-models" title="Link to this heading">#</a></h1>
-<p>The diffusion model, proposed by Dickstein et al. in 2015, is inspired by techniques from nonequilibrium thermodynamics. To get an intuition, consider the problem of modelling the distribution of a drop on ink in water. This is a difficult problem. However, as time progresses, the ink diffuses until it reaches an equilibrium state where the distribution becomes simpler and more uniform. Nonequilibrium thermodynamics provides the tools to describe how the distribution evolves throughout the diffusion process. With sufficiently small step size, it turns out we can go from the simple equilibrium distribution to a more complex distribution. <br></p>
-<p>The same idea holds for modeling image data. In diffusion model, we add Gaussian noise to naturally occuring images, which is typically distributed in complex way. By gradually adding these noises, eventually we get a Gaussian distribution. If we can learn the reverse process, then we can generate new images by simply sampling from the Gaussian distribution and applying the learned reverse diffusion process to transform this noise back into a realistic image.</p>
+<p>The diffusion model, proposed by Dickstein et al. in 2015, is inspired by techniques from nonequilibrium thermodynamics [1]. It involves the process of gradually adding Gaussian noise to natural images, leading to a final state where the image distribution approximates a Gaussian distribution. The idea of the diffusion model is to learn the reverse process: starting from a Gaussian distribution and iteratively denoising to recover the original image. By learning this reverse process, the model can generate new samples by first sampling from a Gaussian distribution and then applying the learned reverse process to produce new images.</p>
+<a class="bg-primary mb-1 reference internal image-reference" href="../_images/ddpm.png"><img alt="fishy" class="bg-primary mb-1 align-center" src="../_images/ddpm.png" style="width: 700px;" /></a>
+<p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
+    <strong> Figure 1 </strong>: Diffusion model architecture (Source: [2])
+</p>
 <section id="diffusion-model-the-objective">
 <h2><span class="section-number">17.1. </span>Diffusion model: the objective<a class="headerlink" href="#diffusion-model-the-objective" title="Link to this heading">#</a></h2>
 <p>Formally, let <span class="math notranslate nohighlight">\(\mathbf{x}_0\)</span> denote the original image. We define a forward process <span class="math notranslate nohighlight">\(q(\mathbf{x}_t|\mathbf{x}_{t-1})\)</span> which adds noise according to some variance schedule <span class="math notranslate nohighlight">\(\{\beta_t\}\in (0,1)\)</span>.</p>
@@ -521,11 +524,9 @@ document.write(`
 <div class="math notranslate nohighlight">
 \[L_t = \mathbb{E}_{t\sim[1, T]\mathbf{x}_0, \epsilon}\bigg[\|\epsilon_t - \epsilon_{\theta}(\sqrt{\bar{\alpha}_t} \mathbf{x}_{0} + \sqrt{1-\bar{\alpha}_t}\epsilon, t)\|_2^2\bigg]\]</div>
 <p>And this gives the final algorithm for training a diffusion model.</p>
-<div style="display: flex; justify-content: center;">
- <img src="/Users/raymondtsao/Desktop/UnsupervisedLearningNotes/notes/Diffusion/figures/algorithm.png" style="max-width: 70%; height: auto;">  
-</div>
+<a class="bg-primary mb-1 reference internal image-reference" href="../_images/algorithm.png"><img alt="fishy" class="bg-primary mb-1 align-center" src="../_images/algorithm.png" style="width: 500px;" /></a>
 <p style="text-align: center; font-size: 14px; margin-top: 20px;"> 
-    <strong> Figure 1 </strong>: Algorithm for training diffusion model.
+    <strong> Figure 2 </strong>: Algorithm for training diffusion model (Source: [2])
 </p></section>
 <section id="toy-example-swiss-roll">
 <h2><span class="section-number">17.4. </span>Toy example: Swiss Roll<a class="headerlink" href="#toy-example-swiss-roll" title="Link to this heading">#</a></h2>
@@ -634,6 +635,10 @@ document.write(`
 <img alt="../_images/17df40a8718a65b603b2bd7ee3177fe985199d329837c55a5b3f70d78ceaa081.png" src="../_images/17df40a8718a65b603b2bd7ee3177fe985199d329837c55a5b3f70d78ceaa081.png" />
 </div>
 </div>
+<p><span style="font-size:20px;"><strong>Citations</strong></span></p>
+<p>[1] <a class="reference external" href="https://arxiv.org/abs/1503.03585">https://arxiv.org/abs/1503.03585</a> <br>
+[2] <a class="reference external" href="https://arxiv.org/abs/2006.11239">https://arxiv.org/abs/2006.11239</a> <br>
+[3] <a class="reference external" href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/">https://lilianweng.github.io/posts/2021-07-11-diffusion-models/</a> <br></p>
 </section>
 </section>
 
