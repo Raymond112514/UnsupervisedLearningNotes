@@ -433,11 +433,7 @@ document.write(`
 <div class="math notranslate nohighlight">
 \[p(x_1, x_2,..., x_D) = \prod_{i} p(x_i|\mathbf{x}_{&lt;i})\]</div>
 <p>jointly, the model must be capable of handling variable-length inputs. A recurrent neural network (RNNs) is a natural choice for this task. Given the previous variables <span class="math notranslate nohighlight">\(x_1, \ldots, x_{i-1}\)</span>, the RNN estimates the probability distribution of the next token <span class="math notranslate nohighlight">\(p(x_i \mid x_{i-1}, x_{i-2}, \ldots, x_1)\)</span> (Figure 1).</p>
-<div style="display: flex; justify-content: center;">
- <img src="RNN.png" style="max-width: 50%; height: auto;">  
-</div>
-<p><img alt="RNN" src="../_images/RNN.png" /></p>
- <img src="RNN.png" style="max-width: 50%; height: auto;">  
+<a class="bg-primary mb-1 reference internal image-reference" href="../_images/RNN.png"><img alt="rnn" class="bg-primary mb-1 align-center" src="../_images/RNN.png" style="width: 600px;" /></a>
 <p style="text-align: center; font-size: 14px;"> 
     <strong> Figure 1 </strong>: RNN based autoregressive model. 
 </p>
